@@ -1,7 +1,6 @@
-function WGPLRT(zP,H0,H1,warpfunc,M,snP,gamma)
-    
+function LaplaceApproximation(pd,lb,ub,Kinv,x0)
     G=@(x) norminv(cdf(pd,x));
-    n=5;x0=ones(5,1)*0.1;lb=zeros(n,1);ub=[];
+    n=5;x0=ones(n,1)*0.1;lb=zeros(n,1);ub=[];
     rng('shuffle');
     A=randn(n);
     Kinv=A*A'
@@ -10,5 +9,4 @@ function WGPLRT(zP,H0,H1,warpfunc,M,snP,gamma)
     [vhat,Qnval]=InteriorPoint(Qneg,x0,lb,ub)
     Qval=-Qnval
     d2Q=hessianQ(pd,Kinv,G,vhat)
-
 end

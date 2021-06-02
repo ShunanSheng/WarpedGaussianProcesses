@@ -1,55 +1,134 @@
 clear all;close all;clc;
 
-mu = 0;
-sigma = 1;
-pd = makedist('Normal','mu',mu,'sigma',sigma);
-f=@(x) pdf(pd,x);
-h=0.00001;
-x0=(1:0.5:3)';
-x=[x0,x0+h];
-y=f(x);
-% df=diff(y,1,2)/h-dnorm(x0)
-% 
-% size(df)
-% size(x0)
-% gradientDist(pd,x0)-dnorm(x0)
-% df=gradientDist(pd,x0);
-% size(df)
+% f=@(x) x'*x;lb=[-1,-1]';ub=[1,1]';x0=[0.5,0.5]';
+% [x,fval] = fmincon(f,x0,[],[],[],[],lb,ub) 
+% [x,fval]= InteriorPoint(f,x0,lb,ub)
 
-% [y,d2f]=hessianDist(pd,x0);
-% y
-% d2f-hessianNorm(x0)
 
-pd=makedist('Gamma','a',2,'b',4);
-% pd=makedist("Beta",'a',1,'b',1)
+pd=makedist('Gamma','a',5,'b',10);
+% pd=makedist("Beta",'a',1,'b',1);
 G=@(x) norminv(cdf(pd,x));
-% y=G(x)
-% dG=diff(y,1,2)/h
-% gradientG(pd1,G,x0)
-% 
-% result=hessianG(pd,G,x0)
-% y=gradientG(pd,G,x0);
-% yh=gradientG(pd,G,x0+h);
-% d2G=diff([y,yh],1,2)/h
-% result-d2G
-
-n=size(x0,1);
+n=5;x0=ones(5,1)*0.1;lb=zeros(n,1);ub=[];
+rng('shuffle');
 A=randn(n);
-Kinv=A*A';
+Kinv=A*A'
 Q=@(x) -1/2*G(x)'*Kinv*G(x)+sum(log(gradientG(pd,G,x)));
-dQ=gradientQ(pd,Kinv,G,x0)
+Qneg=@(x) -Q(x);
+[vhat,Qnval]=InteriorPoint(Qneg,x0,lb,ub)
+Qval=-Qnval
+d2Q=hessianQ(pd,Kinv,G,vhat)
 
-dQnum=zeros(n,1);
-y=Q(x0)
-for i=1:n
-    delta=zeros(n,1);
-    delta(i)=h;
-    yh=Q(x0+delta);
-    dQnum(i)=(yh-y)/h;
-end
-dQnum-dQ
 
-d2Q=hessianQ(pd,Kinv,G,x0)
+
+
+% mu = 0;
+% sigma = 1;
+% pd = makedist('Normal','mu',mu,'sigma',sigma);
+% f=@(x) pdf(pd,x);
+% h=0.00001;
+% pd=makedist('Gamma','a',2,'b',4);
+% % pd=makedist("Beta",'a',1,'b',1);
+%x0=(0.1:0.5:3)';
+
+% x=[x0,x0+h];
+% y=f(x);
+% % df=diff(y,1,2)/h-dnorm(x0)
+% % 
+% % size(df)
+% % size(x0)
+% % gradientDist(pd,x0)-dnorm(x0)
+% % df=gradientDist(pd,x0);
+% % size(df)
+% 
+% % [y,d2f]=hessianDist(pd,x0);
+% % y
+% % d2f-hessianNorm(x0)
+% 
+% pd=makedist('Gamma','a',1,'b',3);
+% % pd=makedist("Beta",'a',1,'b',1);
+% x0=(0.1:0.2:1)';
+% G=@(x) norminv(cdf(pd,x));
+% % y=G(x)
+% % dG=diff(y,1,2)/h
+% % gradientG(pd1,G,x0)
+% 
+% % result=hessianG(pd,G,x0)
+% % y=gradientG(pd,G,x0);
+% % yh=gradientG(pd,G,x0+h);
+% % d2G=diff([y,yh],1,2)/h
+% % result-d2G
+% 
+% h=0.000001;
+% n=size(x0,1);
+% A=randn(n);
+% Kinv=A*A';
+% Q=@(x) -1/2*G(x)'*Kinv*G(x)+sum(log(gradientG(pd,G,x)));
+% 
+% 
+% d2Q=hessianQ(pd,Kinv,G,x0);
+% 
+% d2Qnum=zeros(n,n);
+% dA=zeros(n,n);
+% dB=zeros(n,n);
+% y=gradientQ(pd,Kinv,G,x0);
+% for i=1:n
+%     delta=zeros(n,1);
+%     delta(i)=h;
+%     yh=gradientQ(pd,Kinv,G,x0+delta);
+%     d2Qnum(:,i)=(yh-y)./h;
+% %     dA(:,i)=(Ah-A)./h;
+% %     dB(:,i)=(Bh-B)./h;
+% end
+% diffD2=d2Qnum-d2Q
+% diffD2A=dA-d2A
+% diffD2B=dB-d2B
+
+
+% dQ=gradientQ(pd,Kinv,G,x0)
+% 
+% dQnum=zeros(n,1);
+% y=Q(x0)
+% for i=1:n
+%     delta=zeros(n,1);
+%     delta(i)=h;
+%     yh=Q(x0+delta);
+%     dQnum(i)=(yh-y)/h;
+% end
+% dQnum-dQ
+
+% f=@(x) x.^2;
+% df=@(x) 2*x;
+% d2f=zeros(n,n);
+% y=df(x0);
+% for i=1:n
+%     delta=zeros(n,1);
+%     delta(i)=h;
+%     yh=df(x0+delta);
+%     d2f(:,i)=(yh-y)./h; 
+% end
+% d2f
+
+% 
+% [d2Q,d2A,d2B,d2B1,d2B2,d2B3]=hessianQ(pd,Kinv,G,x0);
+% 
+% d2Qnum=zeros(n,n);
+% dA=zeros(n,n);
+% dB=zeros(n,n);
+% [y,A,B]=gradientQ(pd,Kinv,G,x0);
+% for i=1:n
+%     delta=zeros(n,1);
+%     delta(i)=h;
+%     [yh,Ah,Bh]=gradientQ(pd,Kinv,G,x0+delta);
+%     d2Qnum(:,i)=(yh-y)./h;
+%     dA(:,i)=(Ah-A)./h;
+%     dB(:,i)=(Bh-B)./h;
+% end
+% diffD2=d2Qnum-d2Q
+% diffD2A=dA-d2A
+% diffD2B=dB-d2B
+
+
+
 
 % 
 % f=@squareAll
