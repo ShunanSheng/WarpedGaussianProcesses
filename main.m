@@ -44,8 +44,8 @@ yhat=NLRT(zI,H0,H1,warpfunc,K,snI,sumstats,d,delta,gamma)
 
 
 
-% 
-% 
+% Test some summary statistics
+% zI0=SimIntData(hyp0,hyp1,meanfunc0,covfunc0,meanfunc1,covfunc1,warpfunc,K,snI,0);
 % zI1=SimIntData(hyp0,hyp1,meanfunc0,covfunc0,meanfunc1,covfunc1,warpfunc,K,snI,1);
 % figure();
 % plot(t,zI0,'r',t,zI1,'b')

@@ -1,0 +1,4 @@
+function gradientQ(pd,Kinv,G,v)
+    
+
+end
