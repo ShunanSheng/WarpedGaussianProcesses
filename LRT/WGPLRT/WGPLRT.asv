@@ -1,0 +1,17 @@
+function WGPLRT(zP,H0,H1,warpinv,t,snP,gamma)
+    
+    G=@(x) norminv(cdf(pd,x));n=size(t,1);x0=zP;
+    lb0=H0.hyp.lb;ub0=H0.hyp.ub;lb1=H1.hyp.lb;ub1=H1.hyp.ub;
+    pd0=H0.hyp.pd;pd1=H1.hyp.pd;
+    K0=feval(H0.covfunc{:}, H0.hyp.cov, t);
+    K1=feval(H01.covfunc{:}, H1.hyp.cov, t);
+    Kinv0=K0\eye(n);
+    Kinv1=K1\eye(n);
+    
+    [Qval0,vhat0,A0]=LaplaceApproximation(pd0,Kinv0,warpinv,x0,lb0,ub0);
+    [Qval1,vhat1,A1]=LaplaceApproximation(pd1,Kinv0,warpinv,x0,lb1,ub1);
+    
+    Lambd
+    
+    
+end

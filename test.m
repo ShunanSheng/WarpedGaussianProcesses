@@ -18,7 +18,10 @@ Qneg=@(x) -Q(x);
 Qval=-Qnval
 d2Q=hessianQ(pd,Kinv,G,vhat)
 
+warpinv=@(pd,p) invCdfWarp(pd,p);
+[Qval,vhat,A]=LaplaceApproximation(pd,Kinv,warpinv,x0,lb,ub)
 
+A\eye(n)
 
 
 % mu = 0;
