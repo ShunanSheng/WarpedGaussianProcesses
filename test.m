@@ -4,27 +4,69 @@ clear all;close all;clc;
 % [x,fval] = fmincon(f,x0,[],[],[],[],lb,ub) 
 % [x,fval]= InteriorPoint(f,x0,lb,ub)
 
+rng("default")
+% Simulate Gaussian Process
+meanfunc = @meanConst; 
+covfunc = {@covSEiso}; ell = 1/4; sf = 1; hyp.cov=log([ell; sf]);
+q=0.6;
+pd=makedist("Binomial",'N',1,'p',q); % Bernouli(p)
+hyp=struct('mean',0,'cov',hyp.cov,'dist',pd);
 
-pd=makedist('Gamma','a',5,'b',10);
-% pd=makedist("Beta",'a',1,'b',1);
-G=@(x) norminv(cdf(pd,x));
-n=5;x0=ones(5,1)*0.1;lb=zeros(n,1);ub=[];
-rng('shuffle');
-A=randn(n);
-Kinv=A*A'
-Q=@(x) -1/2*G(x)'*Kinv*G(x)+sum(log(gradientG(pd,G,x)));
-Qneg=@(x) -Q(x);
-[vhat,Qnval]=InteriorPoint(Qneg,x0,lb,ub)
-Qval=-Qnval
-d2Q=hessianQ(pd,Kinv,G,vhat)
+n = 200;
+x = linspace(-10,10,n)';
+f=SimGP(hyp,meanfunc,covfunc,x);
 
-warpinv=@(pd,p) invCdfWarp(pd,p);
-[Qval,vhat,A]=LaplaceApproximation(pd,Kinv,warpinv,x0,lb,ub)
+% Simulate Warped Gaussian Process
+warpfunc=@(pd,p) invCdf(pd,p);
+z=SimWGP(hyp,meanfunc,covfunc,warpfunc,x);
+% sum(z);
 
-A\eye(n)
+indexTest=1:5:n;
+indexTrain=setdiff(1:n,indexTest);
+
+Yhat=z(indexTrain);
+Xtrain=x(indexTrain);
+xstar=x(indexTest);
+Rho=[0.5,0.6,0.7,0.8,0.85,0.9,0.95,0.99,1]';N=length(Rho);MSE=zeros(N,1);Accuracy=zeros(N,1);
+for i=1:N
+    rho=Rho(i);
+    A=[rho,1-rho;1-rho,rho];
+    Ypred=SBLUE(covfunc,hyp.cov,Yhat,Xtrain,xstar,A,q);
+    Ytrue=z(indexTest);
+    Ydiff=(Ypred-Ytrue)';
+    MSE(i)=sum(Ydiff.^2)/length(Ydiff);
+    Accuracy(i)=sum(Ydiff==0)/length(Ydiff);
+    display("Iteration "+i+" rho="+rho+" MSE="+MSE(i)+" Accuracy="+Accuracy(i))
+end
+figure()
+plot(Rho,MSE,'r',Rho,Accuracy,'b')
+legend("MSE",'Accuracy')
+% display("Data Generated")
 
 
-% mu = 0;
+
+% 
+% 
+% pd=makedist('Gamma','a',5,'b',10);
+% % pd=makedist("Beta",'a',1,'b',1);
+% G=@(x) norminv(cdf(pd,x));
+% n=5;x0=ones(5,1)*0.1;lb=zeros(n,1);ub=[];
+% rng('shuffle');
+% A=randn(n);
+% Kinv=A*A'
+% Q=@(x) -1/2*G(x)'*Kinv*G(x)+sum(log(gradientG(pd,G,x)));
+% Qneg=@(x) -Q(x);
+% [vhat,Qnval]=InteriorPoint(Qneg,x0,lb,ub)
+% Qval=-Qnval
+% d2Q=hessianQ(pd,Kinv,G,vhat)
+% 
+% warpinv=@(pd,p) invCdfWarp(pd,p);
+% [Qval,vhat,A]=LaplaceApproximation(pd,Kinv,warpinv,x0,lb,ub)
+% 
+% A\eye(n)
+% 
+% 
+% % mu = 0;
 % sigma = 1;
 % pd = makedist('Normal','mu',mu,'sigma',sigma);
 % f=@(x) pdf(pd,x);
