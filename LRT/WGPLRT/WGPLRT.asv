@@ -5,7 +5,7 @@ function yhat=WGPLRT(zP,H0,H1,warpinv,t,snP,gamma)
 %   Output:
 %         decision yhat
 
-    n=size(t,1);x0=ones(n,1)*0.1;
+    n=size(t,1);x0=ones(n,1)*0.;
     hyp0=H0.hyp;hyp1=H1.hyp;
     lb0=hyp0.lb;ub0=hyp0.ub;
     lb1=hyp1.lb;ub1=hyp1.ub;
@@ -30,14 +30,14 @@ function yhat=WGPLRT(zP,H0,H1,warpinv,t,snP,gamma)
     [Qval0,vhat0,A0]=LaplaceApproximation(pd0,Kinv0,warpinv,x0,lb0,ub0);
     [Qval1,vhat1,A1]=LaplaceApproximation(pd1,Kinv1,warpinv,x0,lb1,ub1);
     
-% 
-%     try chol(A0)
-%         disp('Matrix is symmetric positive definite.')
-%     catch ME
-%         disp('Matrix is not symmetric positive definite')
-%     end
+
+    try chol(A0)
+        disp('Matrix is symmetric positive definite.')
+    catch ME
+        disp('Matrix is not symmetric positive definite')
+    end
     
-    Lambda=testStats(A0,vhat0,Qval0,Klogdet0,A1,vhat1,Qval1,Klogdet1,snP,zP)
+    Lambda=testStats(A0,vhat0,Qval0,Klogdet0,A1,vhat1,Qval1,Klogdet1,snP,zP);
     
     yhat=Lambda>(-log(gamma));
     

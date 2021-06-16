@@ -4,6 +4,6 @@ function [Qval,vhat,A]=LaplaceApproximation(pd,Kinv,warpinv,x0,lb,ub)
     Qneg=@(x) -Q(x);
     [vhat,Qnval]=InteriorPoint(Qneg,x0,lb,ub);
     Qval=-Qnval;
-    A=-hessianQ(pd,Kinv,G,vhat);
+    A=-hessianQ(pd,Kinv,G,vhat); % negative hessian or hessian
 end
 

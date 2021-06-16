@@ -16,7 +16,7 @@ covfunc1 = {@covMaterniso, 3}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
 pd0=makedist('Normal','mu',0,'sigma',1);
 % pd0=makedist('Gamma','a',1,'b',1);
 % pd1=makedist('Gamma','a',10,'b',10);
-pd1=makedist('Beta','a',1,'b',1);
+pd1=makedist('Beta','a',5,'b',10);
 T=10; M=50; K=50; snP=0.1; snI=0.1; 
 lb0=zeros(M,1);ub0=[];lb1=zeros(M,1);ub1=[];
 hyp0=struct('mean',0,'cov',hyp0.cov,'dist',pd0,'t',T,'lb',lb0,'ub',ub0);

@@ -11,7 +11,7 @@ function Lambda=testStats(A0,vhat0,Qval0,Klogdet0,A1,vhat1,Qval1,Klogdet1,snP,zP
     z0=zP-vhat0;
     z1=zP-vhat1;
     
-    D=2*trace(log(B0))+Klogdet0-2*Qval0-2*trace(log(B1))-Klogdet1+2*Qval1;
+    D=log(det(B0))+Klogdet0-2*Qval0-log(det(B1))-Klogdet1+2*Qval1;
     E=z0'*Cinv0*z0;
     F=z1'*Cinv1*z1;
     
