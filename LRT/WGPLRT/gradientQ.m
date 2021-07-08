@@ -1,6 +1,16 @@
 function dQ=gradientQ(pd,Kinv,G,v)
     % Compute the gradient of Q at v
-    % Output: n by 1 gradient Q
+    % Q=-1/2 * G(v)'*Kinv*G(v)+sum(log(dG))
+    % See detailed derivation in the implementation file
+    % Input:
+    % pd: the probabilty distribution
+    % Kinv : the inverse covariance matrix C(T_{1:M},T_{1:M})
+    % G : the inverse warping function handle 
+    % v : the point to take gradient
+    
+    % Output: 
+    % dQ : gradient of Q at v (n x 1)
+    
     h=@(x) pdf(pd,x);dh=@(x) gradientDist(pd,x);
     phi=@normpdf;dphi=@gradientNorm;
     w=G(v);dG=gradientG(pd,G,v);

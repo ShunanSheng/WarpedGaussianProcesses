@@ -1,9 +1,16 @@
 function yhat=WGPLRT(zP,H0,H1,warpinv,t,snP,gamma)
-%   Input: 
-%         point observations,
-%         null/alternative hypotheses
-%   Output:
-%         decision yhat
+    % Conduct Warped Gaussian Process LRT given the point observations
+    %
+    % Input: 
+    % zP   : the point observations
+    % H0,H1: parameters for null/alternative hypotheses
+    % warpinv : the inverse warping function handle G=warpinv(pd,x)
+    % t    : the time points
+    % snP  : noise for point observation
+    % gamma: LRT thereshold
+    %
+    % Output: 
+    % yhat : the decision
 
     n=size(t,1);x0=ones(n,1)*0.1;
     hyp0=H0.hyp;hyp1=H1.hyp;

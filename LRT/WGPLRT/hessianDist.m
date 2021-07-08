@@ -1,6 +1,13 @@
 function d2f=hessianDist(pd,v)
     % Compute the second-order derivative of pdf of a given distribution;
-    % Return a n by 1 vector
+    
+    % Input:
+    % pd: the probabilty distribution
+    % v : the point to take gradient
+    
+    % Output: 
+    % d2f : diagonal of Hessian of pdf of pd at v (n x 1) 
+    
     h=0.00001;
     y=gradientDist(pd,v);
     yh=gradientDist(pd,v+h);

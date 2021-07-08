@@ -1,4 +1,18 @@
 function Lambda=testStats(A0,vhat0,Qval0,Klogdet0,A1,vhat1,Qval1,Klogdet1,snP,zP)
+    % Calcualte the test statistic as in Eqn. 14
+    %
+    % Input: 
+    % zP   : the point observations
+    % A0,vhat0,Qval0: output of Laplace Approximation given null hypothesis
+    % A1,vhat1,Qval1: output of Laplace Approximation given altenative hypothesis
+    % Klogdet0, Klogdet1 : logdet of K0, K1
+    % snP  : noise for point observations
+    %
+    % Output: 
+    % Lambda: the value of the test statistic
+    
+    
+    
     n=size(zP);
     B0=A0+snP^2*eye(n);
     C0=A0\eye(n)+snP^2*eye(n);
