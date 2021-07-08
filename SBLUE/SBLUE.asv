@@ -1,18 +1,16 @@
 function Ypred=SBLUE(covfunc,hypcov,Yhat,Xtrain,xstar,A,q)
-    % Perform SBLUE given the decisions Yhat at the prediction location xstar 
+    % Perform SBLUE given the decisions Yhat at the new location xstar 
     %
     % Input : 
     % covfunc : the cov function of spatial field
     % hypcov : parameter of cov function 
     % Yhat : the noisy labels
     % A : transition matrix
-    % q : the threshold of binary Spatial field
+    % q : the threshold of binar
     % Xtrain: the location of existing sensors
-    % xstar : the location of precidtion
     %
     % Output:
-    % Ypred : the prediction at xstar
-    
+    % Cov_Y : Cov(Yhat,Yhat)
     c=norminv(1-q);
     N=size(Yhat,1);
     

@@ -1,5 +1,17 @@
 function Cov_Y=covY(covfunc,hypcov,c,A,Xtrain)
-    % Calculate Cov(Y)
+    % Calculate Cov(Yhat,Yhat)
+    %
+    % Input : 
+    % covfunc : the cov function of spatial field
+    % hypcov : parameter of cov function 
+    % A : transition matrix
+    % c : invNormCdf(1-q)
+    % Xtrain: the location of existing sensors
+    %
+    % Output:
+    % Cov_Y : Cov(Yhat,Yhat)
+    
+    
     N=size(Xtrain,1);
     mY=meanY(A,c,N);
     p00=A(1);p10=A(2);p01=A(3);p11=A(4);
