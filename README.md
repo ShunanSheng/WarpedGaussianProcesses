@@ -12,6 +12,8 @@
 
 [e01]: Experiment/test_Synthetic_Data.m
 [e02]: Experiment/test_WGPLRT.m
+[e03]: Experiment/test_NLRT.m
+[e04]: Experiment/test_SBLUE.m
 
 
 
