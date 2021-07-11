@@ -33,3 +33,6 @@ octave-workspace
 
 # main file
 main.
+
+# test file
+test.m
