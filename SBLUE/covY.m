@@ -16,6 +16,8 @@ function Cov_Y=covY(covfunc,hypcov,c,A,Xtrain)
     mY=meanY(A,c,N);
     p00=A(1);p10=A(2);p01=A(3);p11=A(4);
     
+    
+    % Evaluate E(Y^2)
     Cov_Y=zeros(N); 
     T1=[-c -c];
     T2=[-c c];
@@ -23,12 +25,12 @@ function Cov_Y=covY(covfunc,hypcov,c,A,Xtrain)
     T4=[c c];
     for i=1:N - 1
         for j=i+1:N
-            X_temp=[Xtrain(i) Xtrain(j)]';
+            X_temp=[Xtrain(i,:); Xtrain(j,:)];
             P1=mvncdf(T1,zeros(1,2),feval(covfunc{:},hypcov,X_temp));
             P2=mvncdf(T2,zeros(1,2),feval(covfunc{:},hypcov,X_temp));
             P3=mvncdf(T3,zeros(1,2),feval(covfunc{:},hypcov,X_temp));
             P4=mvncdf(T4,zeros(1,2),feval(covfunc{:},hypcov,X_temp));
-            Cov_Y(i,j)=p11^2*P1+p10*p11*+p01*p11*P2+p01*p11*P3+p01^2*P4;
+            Cov_Y(i,j)=p11^2*P1+p01*p11*P2+p01*p11*P3+p01^2*P4;
         end
     end
     Cov_Y = Cov_Y + Cov_Y';
@@ -36,5 +38,7 @@ function Cov_Y=covY(covfunc,hypcov,c,A,Xtrain)
     % The varY is acturally E(Y_i^2)
     varY=(p01^2*normcdf(c)+p11^2*normcdf(-c)).*ones(N,1);
     Cov_Y(1:N + 1:end) = varY;
+    
+    % Subtract E(Y)^2
     Cov_Y=Cov_Y-mY*mY';
 end

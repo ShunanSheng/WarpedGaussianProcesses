@@ -18,7 +18,7 @@ function Ypred=SBLUE(covfunc,hypcov,Yhat,Xtrain,xstar,A,q)
     
     mY=meanY(A,c,N);
     Cov_Y=covY(covfunc,hypcov,c,A,Xtrain);
-    Cov_xstar=feval(covfunc{:}, hypcov, xstar,Xtrain);
+    Cov_xstar=feval(covfunc{:}, hypcov, xstar, Xtrain);
     Cov_g=covgY(A,Cov_xstar,c);
     
     

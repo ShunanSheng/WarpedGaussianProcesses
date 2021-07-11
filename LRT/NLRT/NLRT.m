@@ -48,7 +48,7 @@ function yhat=NLRT(zI,H0,H1,warpfunc,K,snI,sumstats,d,delta,gamma)
             n1=n1+1;
         end
     end
-    display("n0="+n0+",n1="+n1)
+%     display("n0="+n0+",n1="+n1)
     
     Lambda=n0/n1;
     yhat=Lambda<gamma;

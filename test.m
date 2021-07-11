@@ -5,38 +5,61 @@ clear all;close all;clc;
 % [x,fval]= InteriorPoint(f,x0,lb,ub)
 
 % rng("default")
-rng(1)
+% rng(1)
 % Simulate Gaussian Process
 meanfunc = @meanConst; 
-covfunc = {@covSEiso}; ell = 1/4; sf = 1; hyp.cov=log([ell; sf]);
-q=0.6;
+covfunc = {@covSEiso}; ell = 1/2; sf = 1; hyp.cov=log([ell; sf]);
+q=0.8;
 pd=makedist("Binomial",'N',1,'p',q); % Bernouli(p)
 hyp=struct('mean',0,'cov',hyp.cov,'dist',pd);
-
-n = 200;
-x = linspace(-10,10,n)';
-f=SimGP(hyp,meanfunc,covfunc,x);
-
-% Simulate Warped Gaussian Process
 warpfunc=@(pd,p) invCdf(pd,p);
-z=SimWGP(hyp,meanfunc,covfunc,warpfunc,x);
-% sum(z);
 
-indexTest=1:50:n;
-indexTrain=setdiff(1:n,indexTest);
+
+%% 1D 
+N = 100;
+x = linspace(-10,10,N)';
+% Simulate Warped Gaussian Process
+z=SimWGP(hyp,meanfunc,covfunc,warpfunc,x);
+
+
+%% 2D
+
+% Location of sensors 
+n = 10; xinf=-10; xsup=10; N=n.^2;
+[X,Y]= meshgrid(linspace(xinf,xsup,n),linspace(xinf,xsup,n));
+xSp=reshape(X,[],1);
+ySp=reshape(Y,[],1); 
+x=[xSp,ySp];
+
+
+
+% Generate the lantent binary spatial field
+z=SimWGP(hyp,meanfunc,covfunc,warpfunc,[xSp,ySp]);
+
+%%
+
+indexTest=1:5:N;
+indexTrain=setdiff(1:N,indexTest);
 
 Yhat=z(indexTrain);
-Xtrain=x(indexTrain);
-xstar=x(indexTest);
-Rho=[0.5,0.6,0.7,0.8,0.85,0.9,0.95,0.99,1]';N=length(Rho);MSE=zeros(N,1);Accuracy=zeros(N,1);
-for i=1:N
+Xtrain=x(indexTrain,:);
+xstar=x(indexTest,:);
+
+% Rho=[0.5,0.6,0.7,0.8,0.85,0.9,0.95,0.99,1]';
+Rho=[0.5,0.8,0.9,0.99,1]';
+% Rho=[1];
+L=length(Rho);MSE=zeros(L,1);Accuracy=zeros(L,1);
+
+for i=1:L
     rho=Rho(i);
     A=[rho,1-rho;1-rho,rho];
+    Yhat=z(indexTrain);
     for j=1:length(Yhat)
         if rand()>rho
             Yhat(j)=1-Yhat(j);
         end
     end
+%     display(Yhat')
     Ypred=SBLUE(covfunc,hyp.cov,Yhat,Xtrain,xstar,A,q);
     Ytrue=z(indexTest);
     Ydiff=(Ypred-Ytrue)';
@@ -44,9 +67,11 @@ for i=1:N
     Accuracy(i)=sum(Ydiff==0)/length(Ydiff);
     display("Iteration "+i+" rho="+rho+" MSE="+MSE(i)+" Accuracy="+Accuracy(i))
 end
-figure()
-plot(Rho,MSE,'r',Rho,Accuracy,'b')
-legend("MSE",'Accuracy')
+
+%%
+% figure()
+% plot(Rho,MSE,'r',Rho,Accuracy,'b')
+% legend("MSE",'Accuracy')
 % display("Data Generated")
 
 

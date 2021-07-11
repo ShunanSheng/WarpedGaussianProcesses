@@ -1,4 +1,4 @@
-function yhat=WGPLRT(zP,H0,H1,warpinv,t,snP,gamma)
+function yhat=WGPLRT(zP,H0,H1,warpinv,t,snP,logGamma)
     % Conduct Warped Gaussian Process LRT given the point observations
     %
     % Input: 
@@ -21,6 +21,7 @@ function yhat=WGPLRT(zP,H0,H1,warpinv,t,snP,gamma)
     covfunc0 = {H0.covfunc};
     covfunc1 = {H1.covfunc};
     
+    % Evalaute K0,K1
     K0=feval(covfunc0{:}, hyp0.cov, t);
     K1=feval(covfunc1{:}, hyp1.cov, t);
     Kchol0=chol(K0+1e-9*eye(n)); 
@@ -33,20 +34,21 @@ function yhat=WGPLRT(zP,H0,H1,warpinv,t,snP,gamma)
     Klogdet1=2*trace(log(Kchol1));
     Kinv1=Kichol1*Kichol1';
     
-    
+    % Perform Laplace approximation get vhat, A
     [Qval0,vhat0,A0]=LaplaceApproximation(pd0,Kinv0,warpinv,x0,lb0,ub0);
     [Qval1,vhat1,A1]=LaplaceApproximation(pd1,Kinv1,warpinv,x0,lb1,ub1);
     
-% 
-%     try chol(A0)
+
+%     try chol(A0);
 %         disp('Matrix is symmetric positive definite.')
 %     catch ME
 %         disp('Matrix is not symmetric positive definite')
 %     end
     
-    Lambda=testStats(A0,vhat0,Qval0,Klogdet0,A1,vhat1,Qval1,Klogdet1,snP,zP)
+    % Compute the test statistic
+    Lambda=testStats(A0,vhat0,Qval0,Klogdet0,A1,vhat1,Qval1,Klogdet1,snP,zP);
     
-    yhat=Lambda>(-log(gamma));
-    
+    % Decision
+    yhat=Lambda>-logGamma;
     
 end
