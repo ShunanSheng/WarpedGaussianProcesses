@@ -10,7 +10,8 @@
  
 
 
-[e01]: Experiment/test_Data.m
+[e01]: Experiment/test_Synthetic_Data.m
+[e02]: Experiment/test_WGPLRT.m
 
 
 
