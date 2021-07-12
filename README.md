@@ -1,9 +1,9 @@
 # Warped Gaussian Process Classfication
 
 ## Experiment
-Multiple expriments have been conducted to validate our algorithm. In the [src][e01], we create a synthetic dataset of sensor network depolyed in R2. Based on the data, we conduct WGPLRT and NLRT to get the local inferences yhat. Finally, yhat is passed to SBLUE to predict the labels at the un-monitored locations. 
+Multiple expriments have been conducted to validate our algorithm. In the [test_Synthetic_Data][e01], we create a synthetic dataset of sensor network depolyed in R2. Based on the data, we conduct WGPLRT and NLRT to get the local inferences yhat. Finally, yhat is passed to SBLUE to predict the labels at the un-monitored locations. 
 
-Tests are also conducted on WGPLRT, NLRT, SBLUE, respectively. See [src][e02-04]
+Tests are also conducted on WGPLRT, NLRT, SBLUE, respectively. See [src][e02][src][e03][src][e04]
 
 
 | No. | Description                                     | Code       |
