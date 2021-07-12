@@ -6,7 +6,7 @@ Multiple expriments have been conducted to validate our algorithms. In the [test
 Individual tests are also conducted on WGPLRT, NLRT, SBLUE, respectively, to validate their efficacy. See [test_WGPLRT.m][e02],[test_NLRT.m][e03],[test_SBLUE.m][e04]. For WGPLRT and NLRT, ROC curves are plotted. We find that
  - WGPLRT performs extremely well on differentiating Normal/Normal, Normal/Gamma warpings. However, the performance deteriorates drastically when the warping functions are Gamma/Gamma, Gamma/Beta.
 
- - NLRT performs reasonably overall with speed even faster than WGPLRT sometimes.
+ - NLRT performs reasonably overall with speed sometimes even faster than WGPLRT.
  - SBLUE works quite well for the noisy data. However, decreasing the noises, i.e. increasing rho, does not improve the MSE loss significantly.
 
 In the future, we may also test the algorithm on the real dataset.
