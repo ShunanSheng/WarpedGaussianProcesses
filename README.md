@@ -3,7 +3,11 @@
 ## Experiment
 Multiple expriments have been conducted to validate our algorithm. In the [test_Synthetic_Data.m][e01], we create a synthetic dataset of sensor network depolyed in R2. Based on the data, we conduct WGPLRT and NLRT to get the local inferences yhat. Finally, yhat is passed to SBLUE to predict the labels at the un-monitored locations. 
 
-Tests are also conducted on WGPLRT, NLRT, SBLUE, respectively. See [test_WGPLRT.m][e02],[test_NLRT.m][e03],[test_SBLUE.m][e04].
+Tests are also conducted on WGPLRT, NLRT, SBLUE, respectively. See [test_WGPLRT.m][e02],[test_NLRT.m][e03],[test_SBLUE.m][e04]. For WGPLRT and NLRT, ROC curves are plotted.
+
+WGPLRT performs extremely well on differentiating Normal/Normal, Normal/Gamma warpings. However, the performance deteriorates drastically when the warping functions are Gamma/Gamma, Gamma/Beta.
+
+NLRT performs reasonably overall with speed even faster than WGPLRT sometimes.
 
 
 | No. | Description                                     | Code       |
