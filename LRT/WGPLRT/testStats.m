@@ -12,7 +12,6 @@ function Lambda=testStats(A0,vhat0,Qval0,Klogdet0,A1,vhat1,Qval1,Klogdet1,snP,zP
     % Lambda: the value of the test statistic
     
     
-    
     n=size(zP);
     B0=A0+snP^2*eye(n);
     C0=A0\eye(n)+snP^2*eye(n);
@@ -29,5 +28,10 @@ function Lambda=testStats(A0,vhat0,Qval0,Klogdet0,A1,vhat1,Qval1,Klogdet1,snP,zP
     E=z0'*Cinv0*z0;
     F=z1'*Cinv1*z1;
     
-    Lambda=1/2*(D+E-F);
+    
+%     b0=log(det(B0))
+%     b1=log(det(B1))
+
+    Lambda=1/2*(real(D+E-F));
+    
 end

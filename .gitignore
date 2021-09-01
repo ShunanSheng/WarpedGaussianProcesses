@@ -1,3 +1,6 @@
+# Data 
+.DS_Store
+
 # Windows default autosave extension
 *.asv
 
@@ -36,3 +39,4 @@ main.
 
 # test file
 test.m
+.DS_Store

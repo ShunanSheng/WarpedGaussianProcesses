@@ -14,11 +14,15 @@ function [Qval,vhat,A]=LaplaceApproximation(pd,Kinv,warpinv,x0,lb,ub)
     % vhat : the mode of Q
     % A    : -hessian(Qvat)
 
+    % Initialize the function
     G=@(x) warpinv(pd,x);
     Q=@(x) -1/2*G(x)'*Kinv*G(x)+sum(log(gradientG(pd,G,x)));
     Qneg=@(x) -Q(x);
+    
+    % Use Interior point to find the mode and maximum value of Q
     [vhat,Qnval]=InteriorPoint(Qneg,x0,lb,ub);
     Qval=-Qnval;
     A=-hessianQ(pd,Kinv,G,vhat); % negative hessian or hessian
+    
 end
 
