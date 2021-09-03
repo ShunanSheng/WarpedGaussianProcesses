@@ -11,12 +11,12 @@ clear all,close all,clc
 %%% H0 Null hypothesis
 meanfunc0 = @meanConst; 
 covfunc0 = {@covSEiso}; ell0 =1/2; sf0 = 1; hyp0.cov=log([ell0; sf0]);
-pd0=makedist('Normal','mu',10,'sigma',10)
+% pd0=makedist('Normal','mu',10,'sigma',10)
 % pd0=makedist('Normal','mu',2,'sigma',1)
 % pd0=makedist('Gamma','a',2,'b',4)
 % pd0=makedist('Logistic','mu',8,'sigma',2)
 % pd0 = makedist('Stable','alpha',0.5,'beta',0,'gam',1,'delta',0)
-% pd0=makedist('tLocationScale','mu',-2,'sigma',1,'nu',20)
+pd0=makedist('tLocationScale','mu',-2,'sigma',1,'nu',3)
 
 
 
@@ -27,8 +27,8 @@ covfunc1 = {@covSEiso}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
 % pd1=makedist('Gamma','a',5,'b',10)
 % pd1=makedist('Beta','a',1,'b',1)
 % pd1=makedist('Logistic','mu',10,'sigma',10)
-pd1=makedist('Normal','mu',0,'sigma',1)
-% pd1=makedist('tLocationScale','mu',-2,'sigma',1,'nu',20)
+% pd1=makedist('Normal','mu',0,'sigma',1)
+pd1=makedist('tLocationScale','mu',-1,'sigma',1,'nu',20)
 
 
 %%% Parameters for the sensor network
@@ -54,37 +54,39 @@ warpinv=@(pd,p) invCdfWarp(pd,p);
 %% WGPLRT
 
 clc;
-n=100; % the size of 1d spatial field
+n=1000; % the size of 1d spatial field
 t=linspace(0,hyp0.t,M)'; % the time points
 yn=rand(n,1)>0.5; % the value of latent field
 
-%% Test on WGPLRT (single trial)
-clc;
-yhat=2*ones(n,1); % initialize the decision vector
-logGamma=0; % LRT threshold
-
-% Parameters
-C0 = chol(feval(covfunc0{:}, hyp0.cov, t)+1e-9*eye(M));
-mu0 = meanfunc0( hyp0.mean, t);
-C1 = chol(feval(covfunc1{:}, hyp1.cov, t)+1e-9*eye(M));
-mu1 = meanfunc1( hyp1.mean, t);
-
-% Run Laplace approximation
-x_init=[ones(M,1)*1, ones(M,1)*1]; 
-[LA0,LA1]=WGPLRT_opt(H0,H1,warpinv,t,x_init);
-
-% Classification
-for i=1:n
-    zP=SimFastPtData(hyp0,hyp1,C0,C1,mu0,mu1,warpfunc,t,snP,yn(i));
-    yhat(i)=WGPLRT_pred(zP,LA0,LA1,snP,logGamma);
-end
-diff=yn-yhat;
-accuracy=(1-sum(diff.^2)/n)*100
-[tp,fp]=confusionMat(yn,yhat)
+% %% Test on WGPLRT (single trial)
+% clc;
+% yhat=2*ones(n,1); % initialize the decision vector
+% logGamma=0; % LRT threshold
+% 
+% % Parameters
+% C0 = chol(feval(covfunc0{:}, hyp0.cov, t)+1e-9*eye(M));
+% mu0 = meanfunc0( hyp0.mean, t);
+% C1 = chol(feval(covfunc1{:}, hyp1.cov, t)+1e-9*eye(M));
+% mu1 = meanfunc1( hyp1.mean, t);
+% 
+% % Run Laplace approximation
+% x_init=[ones(M,1)*1, ones(M,1)*1]; 
+% [LA0,LA1]=WGPLRT_opt(H0,H1,warpinv,t,x_init);
+% 
+% % Classification
+% for i=1:n
+%     zP=SimFastPtData(hyp0,hyp1,C0,C1,mu0,mu1,warpfunc,t,snP,yn(i));
+%     yhat(i)=WGPLRT_pred(zP,LA0,LA1,snP,logGamma);
+% end
+% diff=yn-yhat;
+% accuracy=(1-sum(diff.^2)/n)*100
+% [tp,fp]=confusionMat(yn,yhat)
 
 %% Test on WGPLRT (draw ROC)
 close all;clc;
-LogGamma=log(linspace(0.01,20000,1000))';
+yhat=2*ones(n,1); % initialize the decision vector
+% LogGamma=log(linspace(0.01,20000,1000))';
+LogGamma=linspace(-1000, 1000,1000)';
 N=size(LogGamma,1);
 TP=zeros(N,1);FP=zeros(N,1);
 
@@ -96,14 +98,14 @@ mu1 = meanfunc1( hyp1.mean, t);
 
 % Run Laplace approximation
 x_init=[ones(M,1)*0, ones(M,1)*0]; 
-[LA0,LA1]=WGPLRT_opt(H0,H1,warpinv,t,x_init);
+LRT=WGPLRT_opt(H0,H1,warpinv,t,x_init, snP);
 
 for j=1:N
 	yn=rand(n,1)>0.5; % Ground truth
     logGamma=LogGamma(j); % The threshold
     for i=1:n
         zP=SimFastPtData(hyp0,hyp1,C0,C1,mu0,mu1,warpfunc,t,snP,yn(i));
-        yhat(i)=WGPLRT_pred(zP,LA0,LA1,snP,logGamma);
+        yhat(i)=WGPLRT_pred(zP,LRT,logGamma);
     end
     % Compute the false/true positive rate
     [tp,fp]=confusionMat(yn,yhat);
