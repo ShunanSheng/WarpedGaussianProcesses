@@ -1,6 +1,6 @@
 function [TP,FP]=confusionMat(y,yhat)
-    % Compute the confusion matrix given the ground truth y (0,1) and predictions
-    % yhat (0,1), let's say 1 indictaes true and 0 indicate false
+    % Compute the confusion matrix given the ground truth y (0,1) (vector) and predictions
+    % yhat (0,1) (vector), let's say 1 indictaes true and 0 indicate false
     % Input : 
     % y : ground truth
     % yhat : predictions

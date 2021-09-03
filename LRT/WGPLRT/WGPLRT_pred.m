@@ -1,10 +1,10 @@
 % Improved version
 function yhat=WGPLRT_pred(zP,LRT,logGamma)
-% function yhat=WGPLRT_pred(zP,LA0,LA1,snP,logGamma)
-    % Compute the test statistic
+
+    % Compute the predictor given the real data zP
+    % Inputs:
     % zP: point observations
-    % LA0,LA1: the parameters from WGPLRT_opt.m
-    % snP  : noise for point observation
+    % LRT: the parameters from WGPLRT_opt.m
     % gamma: LRT thereshold
     %
     % Ouput: yhat
@@ -16,4 +16,6 @@ function yhat=WGPLRT_pred(zP,LRT,logGamma)
 
     % Decision
     yhat=Lambda>-logGamma;
+    
+    
 end

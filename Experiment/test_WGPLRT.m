@@ -32,7 +32,9 @@ pd1=makedist('tLocationScale','mu',-1,'sigma',1,'nu',20)
 
 
 %%% Parameters for the sensor network
-T=50; M=100; snP=0.1;
+T=50; M=100; snP=0.1; 
+% each point observation zP is of size Mx1 with noise ~ N(0,snP^2I)
+
 
 %%% Lower/upper bound for optimization in Laplace Approximation,i.e. the range of W
 lb0=[];ub0=[];lb1=[];ub1=[];  % normal/normal, or any distribution with full support
@@ -54,41 +56,12 @@ warpinv=@(pd,p) invCdfWarp(pd,p);
 %% WGPLRT
 
 clc;
-n=1000; % the size of 1d spatial field
+n=100000; % the size of 1d spatial field
 t=linspace(0,hyp0.t,M)'; % the time points
-yn=rand(n,1)>0.5; % the value of latent field
-
-% %% Test on WGPLRT (single trial)
-% clc;
-% yhat=2*ones(n,1); % initialize the decision vector
-% logGamma=0; % LRT threshold
-% 
-% % Parameters
-% C0 = chol(feval(covfunc0{:}, hyp0.cov, t)+1e-9*eye(M));
-% mu0 = meanfunc0( hyp0.mean, t);
-% C1 = chol(feval(covfunc1{:}, hyp1.cov, t)+1e-9*eye(M));
-% mu1 = meanfunc1( hyp1.mean, t);
-% 
-% % Run Laplace approximation
-% x_init=[ones(M,1)*1, ones(M,1)*1]; 
-% [LA0,LA1]=WGPLRT_opt(H0,H1,warpinv,t,x_init);
-% 
-% % Classification
-% for i=1:n
-%     zP=SimFastPtData(hyp0,hyp1,C0,C1,mu0,mu1,warpfunc,t,snP,yn(i));
-%     yhat(i)=WGPLRT_pred(zP,LA0,LA1,snP,logGamma);
-% end
-% diff=yn-yhat;
-% accuracy=(1-sum(diff.^2)/n)*100
-% [tp,fp]=confusionMat(yn,yhat)
-
-%% Test on WGPLRT (draw ROC)
+% Test on WGPLRT (draw ROC)
 close all;clc;
+yn=rand(n,1)>0.5; % Ground truth, the value of latent field
 yhat=2*ones(n,1); % initialize the decision vector
-% LogGamma=log(linspace(0.01,20000,1000))';
-LogGamma=linspace(-1000, 1000,1000)';
-N=size(LogGamma,1);
-TP=zeros(N,1);FP=zeros(N,1);
 
 % Parameters
 C0 = chol(feval(covfunc0{:}, hyp0.cov, t)+1e-9*eye(M));
@@ -100,12 +73,23 @@ mu1 = meanfunc1( hyp1.mean, t);
 x_init=[ones(M,1)*0, ones(M,1)*0]; 
 LRT=WGPLRT_opt(H0,H1,warpinv,t,x_init, snP);
 
+%% Generate samples
+
+ZP=zeros(M,n); % n point observations
+for i=1:n
+    ZP(:,i)=SimFastPtData(hyp0,hyp1,C0,C1,mu0,mu1,warpfunc,t,snP,yn(i));
+end
+%% Plot ROC
+clc;close all;
+N=1000;LogGamma=linspace(-1000, 1000,N)';
+TP=zeros(N,1);FP=zeros(N,1);
+nhat=10000;% Compute for n values with nhat observations in one batch
+
 for j=1:N
-	yn=rand(n,1)>0.5; % Ground truth
     logGamma=LogGamma(j); % The threshold
-    for i=1:n
-        zP=SimFastPtData(hyp0,hyp1,C0,C1,mu0,mu1,warpfunc,t,snP,yn(i));
-        yhat(i)=WGPLRT_pred(zP,LRT,logGamma);
+    for k=1:n/nhat
+        zP=ZP(:,(k-1)*nhat+1:k*nhat);
+        yhat((k-1)*nhat+1:k*nhat)=WGPLRT_pred(zP,LRT,logGamma);
     end
     % Compute the false/true positive rate
     [tp,fp]=confusionMat(yn,yhat);
@@ -116,21 +100,36 @@ for j=1:N
     end
 end
 
-
-%%
-plotVector(FP)
-plotVector(TP)
 plotROC(TP,FP)
 
 %% Locating the LRT threshold
-alpha=0.05; % control the significance level to be 0.05
-lgamma=0.01; % lower bound of the interval
-rgamma=10; % upper bound of the interval
-% Unable to plot meaning ROC (most likely to be the vertical line) or locating the threshold as the TP is either
-% 0 or 1 in most cases
+clc;
+n=100000;nhat=1000;nlogLambda=zeros(n,1);
+ZP0=zeros(M,n); % n point observations
+for i=1:n
+    ZP0(:,i)=SimFastPtData(hyp0,hyp1,C0,C1,mu0,mu1,warpfunc,t,snP,0);
+end
+
+for k=1:n/nhat
+    zP=ZP0(:,(k-1)*nhat+1:k*nhat);
+    nlogLambda((k-1)*nhat+1:k*nhat)=testStats(zP,LRT);
+end
 
 
+%% Single Trial
+% Classification
+alpha=0.05 % Significance Level
+optLogGamma=-quantile(nlogLambda,1-alpha) % Find optimal logGamma
+logGamma=optLogGamma;
+nhat=10000;% Compute for n values with nhat observations in one batch
 
+for k=1:n/nhat
+    zP=ZP(:,(k-1)*nhat+1:k*nhat);
+    yhat((k-1)*nhat+1:k*nhat)=WGPLRT_pred(zP,LRT,logGamma);
+end
+diff=yn-yhat;
+accuracy=(1-sum(diff.^2)/n)*100
+[tp,fp]=confusionMat(yn,yhat)
 
 
 
