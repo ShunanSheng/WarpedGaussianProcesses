@@ -7,7 +7,8 @@ function [TP,FP]=confusionMat(y,yhat)
     
     % Output :
     % TP,FP, true/false positive rate
-    
+    y=y(:);
+    yhat=yhat(:);
     
     tp=sum((y==1)&(yhat==1));
     fp=sum((y==0)&(yhat==1));    
