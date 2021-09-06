@@ -12,8 +12,8 @@ InteriorPoint(Q,x0,lb,ub)
 %% 
 clear all;clc;
 
-% pd=makedist('Normal','mu',2,'sigma',4);
-pd=makedist('Gamma','a',2,'b',4);
+pd=makedist('Normal','mu',2,'sigma',4);
+% pd=makedist('Gamma','a',2,'b',4);
 warpinv=@(pd,p) invCdfWarp(pd,p);
 meanfunc = @meanConst; 
 covfunc = {@covSEiso}; ell0 =1/2; sf0 = 1; hyp.cov=log([ell0; sf0]);

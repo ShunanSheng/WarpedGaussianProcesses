@@ -7,6 +7,8 @@ function [TP,FP]=confusionMat(y,yhat)
     
     % Output :
     % TP,FP, true/false positive rate
+    
+    % Convert inputs to column vectors
     y=y(:);
     yhat=yhat(:);
     

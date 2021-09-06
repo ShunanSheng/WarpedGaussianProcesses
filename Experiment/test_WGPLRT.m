@@ -15,20 +15,21 @@ covfunc0 = {@covSEiso}; ell0 =1/2; sf0 = 1; hyp0.cov=log([ell0; sf0]);
 % pd0=makedist('Normal','mu',2,'sigma',1)
 % pd0=makedist('Gamma','a',2,'b',4)
 % pd0=makedist('Logistic','mu',8,'sigma',2)
-% pd0 = makedist('Stable','alpha',0.5,'beta',0,'gam',1,'delta',0)
-pd0=makedist('tLocationScale','mu',-1,'sigma',1,'nu',3)
+pd0=makedist('Beta','a',4,'b',6)
+% pd0 = makedist('Stable','alpha',0.5,'beta',0.8,'gam',1,'delta',0)
+% pd0=makedist('tLocationScale','mu',-1,'sigma',1,'nu',3)
 
 
 
 %%% H1 Alternative hypothesis
 meanfunc1 = @meanConst; 
-covfunc1 = {@covSEiso}; ell1=1/4; sf1=1; hyp1.cov=log([ell1; sf1]);
+covfunc1 = {@covSEiso}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
 % covfunc1 = {@covMaterniso, 3}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
-% pd1=makedist('Gamma','a',5,'b',10)
-% pd1=makedist('Beta','a',1,'b',1)
+% pd1=makedist('Gamma','a',2,'b',1)
+pd1=makedist('Beta','a',6,'b',4)
 % pd1=makedist('Logistic','mu',10,'sigma',10)
 % pd1=makedist('Normal','mu',0,'sigma',1)
-pd1=makedist('tLocationScale','mu',-1,'sigma',1,'nu',3)
+% pd1=makedist('tLocationScale','mu',-1,'sigma',1,'nu',3)
 
 
 %%% Parameters for the sensor network
@@ -37,10 +38,13 @@ T=50; M=100; snP=1;
 
 
 %%% Lower/upper bound for optimization in Laplace Approximation,i.e. the range of W
-lb0=[];ub0=[];lb1=[];ub1=[];  % normal/normal, or any distribution with full support
+% lb0=[];ub0=[];lb1=[];ub1=[];  % normal/normal, or any distribution with full support
 % lb0=zeros(M,1);ub0=[];lb1=zeros(M,1);ub1=[]; %gamma/gamma
 % lb0=zeros(M,1);ub0=[];lb1=[];ub1=[];  % gamma/normal
 % lb0=[];ub0=[];lb1=zeros(M,1);ub1=[];  % normal/gamma
+lb0=zeros(M,1);ub0=ones(M,1);lb1=zeros(M,1);ub1=ones(M,1); %beta/beta
+
+
 
 % For distribution without full support, we require the density around
 % boundary to be near zero;
@@ -74,7 +78,7 @@ C1 = chol(feval(covfunc1{:}, hyp1.cov, t)+1e-9*eye(M));
 mu1 = meanfunc1( hyp1.mean, t);
 
 % Run Laplace approximation
-x_init=[ones(M,1)*0, ones(M,1)*0]; 
+x_init=[ones(M,1)*0.5, ones(M,1)*0.5]; 
 LRT=WGPLRT_opt(H0,H1,warpinv,t,x_init, snP);
 
 %% Generate samples
