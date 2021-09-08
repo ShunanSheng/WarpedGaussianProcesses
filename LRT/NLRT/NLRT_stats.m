@@ -8,7 +8,7 @@ function [D0,D1]=NLRT_stats(ZI,ZI0,ZI1,sumstats,d)
     % d    : distance mertic 
     %
     % Output: 
-    % D0, D1: distance between ZI0,ZI1 and the integral observation ZI (nIx1)
+    % D0, D1: distance between ZI0,ZI1 and the integral observation ZI (nI)
     
     nI=size(ZI,2);J=size(ZI0,2);
     D0=zeros(J,nI);D1=zeros(J,nI);

@@ -12,8 +12,8 @@ warpfunc=@(pd,p) invCdf(pd,p);
 
 
 %% 1D data
-N = 400;
-x = linspace(-10,10,N)';
+N = 4000;
+x = linspace(-100,100,N)';
 % Simulate Warped Gaussian Process
 z=SimWGP(hyp,meanfunc,covfunc,warpfunc,x);
 
@@ -58,7 +58,6 @@ for i=1:L
     end
     % Apply SBLUE
     Ypred=SBLUE(covfunc,hyp.cov,Yhat2,Xtrain,xstar,A,q);
-    
     % Evaluate the MSE and Accuracy
     Ydiff=(Ypred-Ytrue)';
     MSE(i)=sum(Ydiff.^2)/length(Ydiff);
