@@ -14,6 +14,7 @@ clear all;clc;
 
 pd=makedist('Normal','mu',2,'sigma',4);
 % pd=makedist('Gamma','a',2,'b',4);
+pd=makedist('tLocationScale','mu',-1,'sigma',1,'nu',3)
 warpinv=@(pd,p) invCdfWarp(pd,p);
 meanfunc = @meanConst; 
 covfunc = {@covSEiso}; ell0 =1/2; sf0 = 1; hyp.cov=log([ell0; sf0]);

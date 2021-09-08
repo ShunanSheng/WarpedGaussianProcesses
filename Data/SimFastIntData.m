@@ -1,4 +1,4 @@
-function zI=SimFastIntData(hyp0,hyp1,C0,C1,mu0,mu1,warpfunc,kw,K,snI,yx)
+function ZI=SimFastIntData(hyp0,hyp1,C0,C1,mu0,mu1,warpfunc,K,kw,snI,n0,n1)
     % Simulate the integral observations given the covariance matrix
     % and mean vector
     %
@@ -10,32 +10,14 @@ function zI=SimFastIntData(hyp0,hyp1,C0,C1,mu0,mu1,warpfunc,kw,K,snI,yx)
     % K  : total numebr of windows over [0,T]
     % kw : the number of points per window
     % snI: noises for integral observations
-    % yx : binary value deciding H0 or H1
+    % n0,n1: the number of integral observation sequences for H0,H1
     % Output: 
-    % zI : the integral observations
+    % ZI : the integral observations
 
+    ZI0=SimIntData(hyp0,C0,mu0, warpfunc,K,kw,snI,n0);
+    ZI1=SimIntData(hyp1,C1,mu1, warpfunc,K,kw,snI,n1);
     
-    if yx==0
-        C=C0;
-        mu=mu0;
-        hyp=hyp0;
-    else
-        C=C1;
-        mu=mu1;
-        hyp=hyp1;
-    end
+    ZI=[ZI0,ZI1];
     
-    T=hyp.t;
-    
-    n=kw*K;
-    % Define the latent Gaussian Process
-    f = C'*randn(n, 1) + mu;
-    % Define the warped Gaussian Process
-    z=warpfunc(hyp.dist,f);
-    
-    zI=zeros(K,1);
-    for i=1:K
-        zI(i)=T/K/kw*sum(z((i-1)*kw+1:i*kw)); % Take riemann-stiejtes sum
-    end
-    zI=zI+snI*randn(K,1);
+ 
 end
