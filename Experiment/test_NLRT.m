@@ -6,7 +6,7 @@ clear all,close all,clc
 %%% H0 Null hypothesis
 meanfunc0 = @meanConst; 
 covfunc0 = {@covSEiso}; ell0 =1/2; sf0 = 1; hyp0.cov=log([ell0; sf0]);
-pd0=makedist('Normal','mu',10,'sigma',10);
+pd0=makedist('Normal','mu',10,'sigma',1)
 % pd0=makedist('Normal','mu',0,'sigma',1);
 % pd0=makedist('Gamma','a',2,'b',4);
 
@@ -17,7 +17,8 @@ covfunc1 = {@covSEiso}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
 % covfunc1 = {@covMaterniso, 3}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
 % pd1=makedist('Gamma','a',1,'b',1);
 % pd1=makedist('Beta','a',1,'b',1);
-pd1=makedist('Normal','mu',0,'sigma',1);
+pd1=makedist('Normal','mu',-2,'sigma',1);
+% pd1=makedist('Logistic','mu',10,'sigma',10)
 
 %%% Parameters for the sensor network
 T=10; K=100; snI=0.1; 
@@ -59,81 +60,62 @@ mu1 = meanfunc1( hyp1.mean, x);
 % the integral observations
 ZI=SimFastIntData(hyp0,hyp1,C0,C1,mu0,mu1,warpfunc,K,kw,snI,n0,n1);
 
-%% NLRT ROC
+%% NLRT ROC curve constants
 clc;
 sumstats=@summaryMoment; % the summary statistic
 d=@distEuclid; % distance metric
-delta=1; % distance tolerance
 J=10000; % number of samples per hypothesis
 
 [ZI0,ZI1]=NLRT_gene(hyp0,C0,mu0,hyp1,C1,mu1, warpfunc,K,kw,snI,J); % generate J samples of integral observations from null ...
                                                                    % and alternative hypothesis
 
-%%
+%% Plot ROC
 clc;
-N=1000;LogGamma=linspace(-100,100,N);
-TP=zeros(N,1);FP=zeros(N,1);
+N=1000;M=5;LogGamma=linspace(-100,100,N);Delta=linspace(0.5,5,M);% distance tolerance
+TP=zeros(N,M);FP=zeros(N,M);
 [D0,D1]=NLRT_stats(ZI,ZI0,ZI1,sumstats,d); % compute the distance matrix
 
 tic;
-for j=1:N
-    tstart=tic;
-    logGamma=LogGamma(j);
-    [Lambda,yhat]=NLRT_pred(D0,D1,delta,logGamma); % Compute yhat given delta and logGamma
-    [tp,fp]=confusionMat(yn,yhat);
-    TP(j)=tp;
-    FP(j)=fp;
-    if mod(j,100)==0
-        display("Iteration="+j+",TP="+TP(j)+",FP="+FP(j));
-        telapsed = toc(tstart)
+for i=1:M
+    delta=Delta(i);
+    Lambda=NLRT_pred_delta(D0,D1,delta);
+    for j=1:N
+        logGamma=LogGamma(j);
+        yhat=NLRT_pred_gamma(Lambda,logGamma); % Compute yhat given Lambda and logGamma
+        [tp,fp]=confusionMat(yn,yhat);
+        TP(j,i)=tp;
+        FP(j,i)=fp;
+        if mod(j,500)==0
+            display("Iteration="+j+",TP="+TP(j,i)+",FP="+FP(j,i));
+        end
     end
 end
 avergeTime=toc/N
-plotROC(TP,FP)
+
+%% Plot ROC
+close all;
+FigLegend=cell(M,1);
+for i=1:M
+   FigLegend{i}="delta="+Delta(i); % create legend recording delta
+end
+
+plotROC(TP,FP,[],FigLegend)
 
 %% find the optimal logGamma
-logGamma=0;
 J=10000; % number of samples per hypothesis
 
-
-[ZI0,ZI1]=NLRT_gene(hyp0,C0,mu0,hyp1,C1,mu1, warpfunc,K,kw,snI,J);
+[ZI0,ZI1]=NLRT_gene(hyp0,C0,mu0,hyp1,C1,mu1, warpfunc,K,kw,snI,J);yn=zeros(nI,1);
 
 ZInull=SimIntData(hyp0,C0,mu0, warpfunc,K,kw,snI,nI);
 
 [D0,D1]=NLRT_stats(ZInull,ZI0,ZI1,sumstats,d); % compute the distance matrix
 
-%%
-clc
-Delta=linspace(0.01,20,20);TP=zeros(20,1);FP=zeros(20,1);
-for i=1:20
-    [Lambda,yhat]=NLRT_pred(D0,D1,Delta(i),logGamma);
-%     histogram(Lambda)
-    alpha=0.05; % significance Level
-    optGamma=quantile(Lambda,alpha); % find optimal logGamma
-    [Lambda,yhat]=NLRT_pred(D0,D1,Delta(i),log(optGamma)); % Compute yhat given delta and logGamma
-    [tp,fp]=confusionMat(yn,yhat);
-    FP(i)=fp;
-    TP(i)=tp;
-end
-
-plotROC(TP,FP)
-
-%%
+%% The performance is super good
 clc;
-histogram(Lambda)
+Lambda=NLRT_pred_delta(D0,D1,Delta(3));
+figure();
+histogram(Lambda(Lambda<10))
 alpha=0.05 % significance Level
-optGamma=quantile(Lambda,alpha) % find optimal logGamma
-[Lambda,yhat]=NLRT_pred(D0,D1,delta,log(optGamma)); % Compute yhat given delta and logGamma
+optlogGamma=log(quantile(Lambda,alpha)) % find optimal logGamma
+yhat=NLRT_pred_gamma(Lambda,optlogGamma); % Compute yhat given delta and logGamma
 [tp,fp]=confusionMat(yn,yhat)
-
-
-
-%%%
-
-% 
-% % Single Trial
-% clc;
-% gamma=1;
-% yhat=NLRT_pred(ZI,S0,S1,sumstats,d,delta,gamma);
-% [tp,fp]=confusionMat(yn,yhat);
-% %%%

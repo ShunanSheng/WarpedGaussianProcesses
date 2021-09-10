@@ -15,7 +15,7 @@ function ZI=SimIntData(hyp,C,mu, warpfunc,K,kw,snI,nI)
     % Output: 
     % ZI : the integral observations
 
-    % [arameters
+    % parameters
     T=hyp.t;
     n=kw*K;
     dt=T/K/kw;
@@ -29,7 +29,7 @@ function ZI=SimIntData(hyp,C,mu, warpfunc,K,kw,snI,nI)
     
     ZI=zeros(K,nI);
     for i=1:K
-        ZI(i,:)=dt.*SimpsonRule(z((i-1)*kw+1:i*kw,:),dt);
+        ZI(i,:)=SimpsonRule(z((i-1)*kw+1:i*kw,:),dt);
     end
     ZI=ZI+snI*randn(K,nI);
     

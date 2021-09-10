@@ -1,6 +1,70 @@
 parpool(3)
 parfor i=1:3, c(:,i) = eig(rand(1000)); end
 
+%% Verify model does generate the correct integral observation
+% Assume K(t,s)=min(t,s), m=0, then f becomes a Brownian motion
+% Let pd~N(0,1), then W=Id, so z is also the Brownian motion. 
+% Let noise to be 0, the integral of z over [0,T/K] is N(0,1/3*T^3/K^3)
+clear all;clc;
+
+pd=makedist('Normal','mu',0,'sigma',1);
+meanfunc = @meanConst; 
+covfunc={@covFBM};sf=1;h=1/2;hyp.cov=[log(sf);-log(1/h-1)];
+warpfunc=@(pd,p) invCdf(pd,p);
+T=400;K=100;
+hyp=struct('mean',0,'cov',hyp.cov,'dist',pd,'t',T);
+
+
+
+%% Check integral observations
+clc;
+nI=10000;snI=0;
+kw= ceil(exp(log(1000000*T/K/180)/4)); % calculate the number of point neeed per window under Simpson's rule with 0.01 error
+kw= round(kw/2)*2+1;n=kw*K;x=linspace(0,T,n)';
+C = chol(feval(covfunc{:}, hyp.cov, x)+1e-16*eye(n));
+mu = meanfunc( hyp.mean, x);
+ZI=SimIntData(hyp,C,mu,warpfunc,K,kw,snI,nI);
+
+%%
+z=ZI(1,:);t=linspace(-10,10,1000)';pd_hat=makedist('Normal','mu',0,'sigma',sqrt(1/3*T^3/(K^3)));
+y=pdf(pd_hat,t);
+zf=z(z~=Inf);
+var(zf)-1/3*T^3/(K^3)
+
+close all;
+figure();
+histogram(z,'Normalization','pdf')
+hold on;
+plot(t,y);
+title("Density plot vs histogram")
+legend("Warpdist=N(0,1)")
+
+
+
+
+%%
+% C=feval(covfunc{:},hyp.cov,x)
+figure()
+plot(x,z)
+
+%%
+x=linspace(0,100,10000)';
+z=SimWGP(hyp,meanfunc,covfunc,warpfunc,x)';
+y=pdf(pd,x);
+close all;
+figure();
+histogram(z,'Normalization','pdf')
+hold on;
+plot(x,y);
+title("Density plot vs histogram")
+legend("Warpdist=N(0,1)")
+
+
+
+
+
+
+
 
 %%
 % Check Interior point method
@@ -48,9 +112,6 @@ Kinv=Kichol0*Kichol0';
 
 G=@(x) warpinv(pd,x);
 Q=@(x) -1/2*G(x)'*Kinv*G(x)+sum(log(gradientG(pd,G,x)));
-
-
-
 
 
 %%

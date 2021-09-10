@@ -1,14 +1,13 @@
-function [Lambda,yhat]=NLRT_pred(D0,D1,delta,logGamma)
-    % Given the distance tolerance delta and LRT threshold, compute yhat
+function Lambda=NLRT_pred_delta(D0,D1,delta)
+    % Given the distance tolerance delta, compute the test statistic Lambda
     % Input :
     % D0, D1 : the distance matrix between ZI0/ZI1 and ZI
     % delta: distance tolerance
-    % logGamma: LRT thereshold
-    % Output: yhat
+    % Output: Lambda
   
     
     nI=size(D0,2);
-    nhat=10;
+    nhat=1000;
     nbatch=ceil(nI/nhat);
     n0=cell(1,nbatch);n1=cell(1,nbatch);
     
@@ -18,6 +17,6 @@ function [Lambda,yhat]=NLRT_pred(D0,D1,delta,logGamma)
     end
     N0=horzcat(n0{:});
     N1=horzcat(n1{:});
+    
     Lambda=(N0./N1)'; % the test statistic
-    yhat=log(Lambda)<logGamma;
 end
