@@ -6,18 +6,18 @@ clear all,close all,clc
 %%% H0 Null hypothesis
 meanfunc0 = @meanConst; 
 covfunc0 = {@covSEiso}; ell0 =1/2; sf0 = 1; hyp0.cov=log([ell0; sf0]);
-pd0=makedist('Normal','mu',10,'sigma',1)
+% pd0=makedist('Normal','mu',10,'sigma',1)
 % pd0=makedist('Normal','mu',0,'sigma',1);
-% pd0=makedist('Gamma','a',2,'b',4);
+pd0=makedist('Gamma','a',2,'b',4);
 
 %%% H1 Alternative hypothesis
 
 meanfunc1 = @meanConst; 
 covfunc1 = {@covSEiso}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
 % covfunc1 = {@covMaterniso, 3}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
-% pd1=makedist('Gamma','a',1,'b',1);
+pd1=makedist('Gamma','a',1,'b',1);
 % pd1=makedist('Beta','a',1,'b',1);
-pd1=makedist('Normal','mu',-2,'sigma',1);
+% pd1=makedist('Normal','mu',-2,'sigma',1);
 % pd1=makedist('Logistic','mu',10,'sigma',10)
 
 %%% Parameters for the sensor network
@@ -102,17 +102,14 @@ end
 plotROC(TP,FP,[],FigLegend)
 
 %% find the optimal logGamma
+ZInull=SimIntData(hyp0,C0,mu0, warpfunc,K,kw,snI,nI);yn=zeros(nI,1); % generate integral observations from H0 only
 J=10000; % number of samples per hypothesis
-
-[ZI0,ZI1]=NLRT_gene(hyp0,C0,mu0,hyp1,C1,mu1, warpfunc,K,kw,snI,J);yn=zeros(nI,1);
-
-ZInull=SimIntData(hyp0,C0,mu0, warpfunc,K,kw,snI,nI);
-
+[ZI0,ZI1]=NLRT_gene(hyp0,C0,mu0,hyp1,C1,mu1, warpfunc,K,kw,snI,J);
 [D0,D1]=NLRT_stats(ZInull,ZI0,ZI1,sumstats,d); % compute the distance matrix
 
 %% The performance is super good
 clc;
-Lambda=NLRT_pred_delta(D0,D1,Delta(3));
+Lambda=NLRT_pred_delta(D0,D1,Delta(3));% the optimal delta from ROC
 figure();
 histogram(Lambda(Lambda<10))
 alpha=0.05 % significance Level

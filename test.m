@@ -1,3 +1,16 @@
+clear all; clc;
+
+A=[1,2;2,1];
+try chol(A);
+    disp('Matrix is symmetric positive definite.')
+catch ME
+    disp('Matrix is not symmetric positive definite')
+    disp(A)
+end
+
+eig(A)
+
+%%
 parpool(3)
 parfor i=1:3, c(:,i) = eig(rand(1000)); end
 
@@ -133,8 +146,6 @@ F=@(x) gradientQ(pd,Kinv,G,x);
 d2Qhat=gradientEmpirical(F,v)
 
 diffd2Q=d2Qhat-d2Q
-
-
 
 
 %% Verify the LA

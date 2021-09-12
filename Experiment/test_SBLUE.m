@@ -1,10 +1,9 @@
-%%% Test for SBLUE on 1D and 2D simulated data
-
+%%% Test of SBLUE on 1D and 2D simulated data
 clear all;close all;clc;
 
 % Set up the spatial fied
 meanfunc = @meanConst; 
-covfunc = {@covSEiso}; ell = 1/2; sf = 1; hyp.cov=log([ell; sf]);
+covfunc = {@covSEiso}; ell = 1; sf = 1; hyp.cov=log([ell; sf]);
 q=0.8;
 pd=makedist("Binomial",'N',1,'p',q); % Bernouli(p)
 hyp=struct('mean',0,'cov',hyp.cov,'dist',pd);
@@ -12,16 +11,14 @@ warpfunc=@(pd,p) invCdf(pd,p);
 
 
 %% 1D data
-N = 4000;
-x = linspace(-100,100,N)';
+N = 1000;
+x = linspace(-10,10,N)'; % Location of sensors
 % Simulate Warped Gaussian Process
 z=SimWGP(hyp,meanfunc,covfunc,warpfunc,x);
 
-
 %% 2D data
-
 % Location of sensors 
-n = 20; xinf=-10; xsup=10; N=n.^2;
+n = 30; xinf=-10; xsup=10; N=n.^2;
 [X,Y]= meshgrid(linspace(xinf,xsup,n),linspace(xinf,xsup,n));
 xSp=reshape(X,[],1);
 ySp=reshape(Y,[],1); 
@@ -31,7 +28,7 @@ x=[xSp,ySp];
 z=SimWGP(hyp,meanfunc,covfunc,warpfunc,[xSp,ySp]);
 
 %% Partition the training and test set
-
+clc;
 indexTest=1:5:N;
 indexTrain=setdiff(1:N,indexTest);
 
@@ -40,34 +37,48 @@ Ytrue=z(indexTest);
 Xtrain=x(indexTrain,:);
 xstar=x(indexTest,:);
 
+SBLUEprep=SBLUE_stats_prep(covfunc,hyp.cov,Xtrain,xstar,q); 
+% the computation of P1,...,P4 is super slow
 
-% Rho is the true negative & true positive rate
-% Rho=[0.5,0.6,0.7,0.8,0.9,0.95,0.99,1]';
-Rho=[1];
+%%
+clc;
+% In the experiment,
+% we may use Rho to control both true negative & true positive rate,
+Rho=linspace(0,1,100)';
 L=length(Rho);MSE=zeros(L,1);Accuracy=zeros(L,1);
+TP=zeros(L,1);FP=zeros(L,1);
 
-for i=1:L
+M=10000;
+YT=repmat(Ytrue,[1,M]);
+for i=1:L % We expect when rho is increasing, the performance will become better
     rho=Rho(i);
     A=[rho,1-rho;1-rho,rho]; % Define the transition matirx
     % Simulate the noisy data
-    Yhat2=Yhat;
-    for j=1:length(Yhat)
+    Yhat_noise=repmat( Yhat, [1,M] );
+    for j=1:length(Yhat_noise(:))
         if rand()>rho
-            Yhat2(j)=1-Yhat(j);
+            Yhat_noise(j)=1-Yhat_noise(j);
         end
     end
     % Apply SBLUE
-    Ypred=SBLUE(covfunc,hyp.cov,Yhat2,Xtrain,xstar,A,q);
+    SBLUE=SBLUE_stats(SBLUEprep,A,q);
+    Ypred=SBLUE_pred(SBLUE,Yhat_noise);
     % Evaluate the MSE and Accuracy
-    Ydiff=(Ypred-Ytrue)';
-    MSE(i)=sum(Ydiff.^2)/length(Ydiff);
-    Accuracy(i)=sum(Ydiff==0)/length(Ydiff);
-    display("Iteration "+i+" rho="+rho+" MSE="+MSE(i)+" Accuracy="+Accuracy(i))
+    [tp,fp]=confusionMat(YT,Ypred);
+    TP(i)=tp;
+    FP(i)=fp;
+    if mod(i,floor(L/10))==0
+        disp("Iteration "+i+" rho="+rho+" TP="+tp+" FP="+fp)
+    end
 end
 
-figure()
-plot(Rho,MSE,'r',Rho,Accuracy,'b')
-title("MSE & Accuracy vs Rho")
-legend("MSE",'Accuracy')
 
+%%
+close all;
+figure();
+plot(Rho,TP,"DisplayName","TP");
+hold on;
+plot(Rho,FP,"DisplayName","FP");
+legend("TP","FP")
+title("FP & TP plot vs Rho when q=",q);
 
