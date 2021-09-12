@@ -1,4 +1,4 @@
-function z=SimFastPtData(hyp0,hyp1,C0,C1,mu0,mu1,warpfunc,t,snP,yx)
+function ZP=SimFastPtData(hyp0,hyp1,C0,C1,mu0,mu1,warpfunc,t,snP,n0,n1)
     % Simulate the point observations given the covariance matrix
     % and mean vector
     %
@@ -6,31 +6,18 @@ function z=SimFastPtData(hyp0,hyp1,C0,C1,mu0,mu1,warpfunc,t,snP,yx)
     % hyp0,hyp1: parameters for the two hypotheses
     % C0,C1    : chol decomposition of covariance matrix for H0,H1
     % mu0,mu1  : mean vector for H0,H1
+    % n0,n1    : the number of point-observation sequences generated for
+    % H0,H1
     % warpfunc : the warp function handle
-    % K  : total numebr of windows over [0,T]
-    % kw : the number of points per window
-    % snI: noises for integral observations
-    % yx : binary value deciding H0 or H1
+    % t   : the time points to observe data
+    % snP: noises for integral observations
     % Output: 
-    % zI : the integral observations
-
-    if yx==0
-        C=C0;
-        mu=mu0;
-        hyp=hyp0;
-    else
-        C=C1;
-        mu=mu1;
-        hyp=hyp1;
-    end
+    % z : the point observations
     
-    T=hyp.t;
     
-    M=size(t,1);
+    ZP0=SimPtData(hyp0,C0,mu0,warpfunc,t,snP,n0);
+    ZP1=SimPtData(hyp1,C1,mu1,warpfunc,t,snP,n1);
     
-    % Define the latent Gaussian Process
-    f = C'*randn(M, 1) + mu;
-    % Define the warped Gaussian Process, then the point observations
-    z=warpfunc(hyp.dist,f)+snP*randn(M,1);
+    ZP=[ZP0,ZP1];
     
 end

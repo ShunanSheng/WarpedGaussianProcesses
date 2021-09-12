@@ -1,27 +1,36 @@
-function zI=SimIntData(hyp0,hyp1,meanfunc0,covfunc0,meanfunc1,covfunc1,warpfunc,K,snI,yx)
+function ZI=SimIntData(hyp,C,mu, warpfunc,K,kw,snI,nI)
     % Simulate integral observations over time period [0,T] with K windows
-    % using the given cov, mean function handles
+    % using the given chol matrix C, and mean vector C
     %
     % Input: 
-    % hyp0,hyp1: parameters for the two hypotheses
-    % meanfunc0,meanfunc1: mean functions for H0,H1
-    % covfunc0,covfunc1  : covariance functions for H0,H1
+    % hyp:  parameters for the two hypotheses
+    % C  : chol decomposition of covariance matrix
+    % mu : mean vector
     % warpfunc: the warp function handle
-    % K  : total numebr of windows over [0,T]
+    % K  : the total numebr of windows over [0,T]
+    % kw : the number of points per window
     % snI: noises for integral observations
-    % yx : binary value deciding H0 or H1
+    % nI  : the number of integral-observation sequences  generated
     %
     % Output: 
-    % zI : the integral observations
+    % ZI : the integral observations
 
+    % parameters
+    T=hyp.t;
+    n=kw*K;
+    dt=T/K/kw;
     
-
-
-    zI=zeros(K,1);T=hyp0.t;n0=100; 
-    t=linspace(0,T,K*n0)'; % find a dense grid on [0,T]
-    z=SimTemporal(hyp0,hyp1,meanfunc0,covfunc0,meanfunc1,covfunc1,warpfunc,t,yx); % Simulate the latent temporal process
+    % compute in batch if memory overflows
+    
+    % Define the latent Gaussian Process
+    f = C'*randn(n, nI) + mu;
+    % Define the warped Gaussian Process
+    z=warpfunc(hyp.dist,f);
+    
+    ZI=zeros(K,nI);
     for i=1:K
-        zI(i)=T/K/n0*sum(z((i-1)*n0+1:i*n0)); % Take riemann-stiejtes sum
+        ZI(i,:)=SimpsonRule(z((i-1)*kw+1:i*kw,:),dt);
     end
-    zI=zI+snI*randn(K,1);
+    ZI=ZI+snI*randn(K,nI);
+    
 end

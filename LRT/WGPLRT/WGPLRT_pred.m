@@ -1,20 +1,34 @@
-function yhat=WGPLRT_pred(zP,LA0,LA1,snP,logGamma)
-    % Compute the test statistic
+% Improved version
+function yhat=WGPLRT_pred(ZP,LRT,logGamma)
+
+    % Compute the predictor given the real data zP
+    % For zP of large size, we evaluate the LRT in batches to avoid memory
+    % overflow
+    % Inputs:
     % zP: point observations
-    % LA0,LA1: the parameters from WGPLRT_opt.m
-    % snP  : noise for point observation
+    % LRT: the parameters from WGPLRT_opt.m
     % gamma: LRT thereshold
     %
     % Ouput: yhat
     
-    % Assign the parameters
-    Qval0=LA0.Qval;A0=LA0.A;vhat0=LA0.vhat;Klogdet0=LA0.Klogdet;
+    nhat=10000; % The batch size 
+    n=size(ZP,2);
+    nbatch=ceil(n/nhat); % The number of batches
     
-    Qval1=LA1.Qval;A1=LA1.A;vhat1=LA1.vhat;Klogdet1=LA1.Klogdet;
-    
-    % Evaluatet the test statistic
-    Lambda=testStats(A0,vhat0,Qval0,Klogdet0,A1,vhat1,Qval1,Klogdet1,snP,zP);
-
-    % Decision
-    yhat=Lambda>-logGamma;
+    Yhat=cell(1,nbatch);
+    for k=1:nbatch
+        if k*nhat<=n
+            zP=ZP(:,(k-1)*nhat+1:k*nhat);
+        else
+            zP=ZP(:,(k-1)*nhat+1:end);
+            
+        end
+        % Evaluatet the test statistic
+        Lambda= (LRT.const + sum((LRT.Cinv0 * (zP - LRT.vhat0)) .^ 2) ...
+            - sum((LRT.Cinv1 * (zP - LRT.vhat1)) .^ 2)) / 2;
+        % Decision
+        Yhat{k}=(Lambda>-logGamma)';
+    end
+    yhat=vertcat(Yhat{:});
+ 
 end

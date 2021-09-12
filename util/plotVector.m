@@ -5,7 +5,6 @@ function plotVector(x,Xtitle,Xlegend)
     if ~exist('Xlegend', 'var')||isempty(Xlegend)
         Xlegend="x";
     end
-    figure()
     n=length(x);
     plot(1:1:n,x);
     title(Xtitle);
