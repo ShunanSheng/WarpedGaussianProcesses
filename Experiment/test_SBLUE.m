@@ -11,7 +11,7 @@ warpfunc=@(pd,p) invCdf(pd,p);
 
 
 %% 1D data
-N = 1000;
+N = 100;
 x = linspace(-10,10,N)'; % Location of sensors
 % Simulate Warped Gaussian Process
 z=SimWGP(hyp,meanfunc,covfunc,warpfunc,x);
