@@ -62,7 +62,7 @@ warpinv=@(pd,p) invCdfWarp(pd,p);
 
 %% WGPLRT
 
-n=100000; % the size of 1d spatial field
+n=10000; % the size of 1d spatial field
 t=linspace(0,hyp0.t,M)'; % the time points
 % test on WGPLRT (draw ROC)
 n0=0.5*n;n1=n-n0;
@@ -107,12 +107,8 @@ plotROC(TP,FP)
 
 %% Locating the LRT threshold
 clc;
-n=100000;
-ZP0=SimPtData(hyp0,C0,mu0,warpfunc,t,snP,n); % generate 
-nlogLambda=testStats(ZP0,LRT); % compute the test statistics
-
 alpha=0.05 % significance Level
-optLogGamma=-quantile(nlogLambda,1-alpha) % find optimal logGamma
+optLogGamma=WGPLRT_opt_gamma(LRT,hyp0,C0,mu0,warpfunc,t,snP,alpha)
 logGamma=optLogGamma;% compute for n values with nhat observations in one batch
 
 yhat=WGPLRT_pred(ZP,LRT,logGamma);

@@ -92,7 +92,7 @@ for i=1:M
 end
 avergeTime=toc/N
 
-%% Plot ROC
+% Plot the ROC graph
 close all;
 FigLegend=cell(M,1);
 for i=1:M
@@ -102,17 +102,9 @@ end
 plotROC(TP,FP,[],FigLegend)
 
 %% find the optimal logGamma
-ZInull=SimIntData(hyp0,C0,mu0, warpfunc,K,kw,snI,nI);yn=zeros(nI,1); % generate integral observations from H0 only
-J=10000; % number of samples per hypothesis
-[ZI0,ZI1]=NLRT_gene(hyp0,C0,mu0,hyp1,C1,mu1, warpfunc,K,kw,snI,J);
-[D0,D1]=NLRT_stats(ZInull,ZI0,ZI1,sumstats,d); % compute the distance matrix
+yn=zeros(nI,1); 
+optlogGamma=NLRT_opt_logGamma(hyp0,C0,mu0,ZI0,ZI1,warpfunc,sumstats,d,K,kw,snI,1,alpha)
 
-%% The performance is super good
-clc;
-Lambda=NLRT_pred_delta(D0,D1,Delta(3));% the optimal delta from ROC
-figure();
-histogram(Lambda(Lambda<10))
-alpha=0.05 % significance Level
-optlogGamma=log(quantile(Lambda,alpha)) % find optimal logGamma
+%% The performance at the opt_logGamma
 yhat=NLRT_pred_gamma(Lambda,optlogGamma); % Compute yhat given delta and logGamma
 [tp,fp]=confusionMat(yn,yhat)
