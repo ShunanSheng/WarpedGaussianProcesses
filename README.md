@@ -1,15 +1,17 @@
 # Warped Gaussian Process Classfication
 
 ## Experiment
-Multiple expriments have been conducted to validate our algorithms. In the [test_Synthetic_Data.m][e01], we create a synthetic dataset of sensor network depolyed in R^2. Based on the data, we conduct WGPLRT and NLRT to get the local inferences, Yhat. Finally, Yhat is passed to SBLUE to predict the labels at the un-monitored locations. 
+Multiple expriments have been conducted to validate our algorithms. In the [test_Synthetic_Data.m][e01], we create a synthetic dataset of sensor network depolyed in R^2 with 2500 spatial points over the simplex [-1,1] x [-1,1]. At each location, based on the value of the spatial field, a sequence of point/integral observastions is generated from either H0 or H1. 
 
-Individual tests are also conducted on WGPLRT, NLRT, SBLUE, respectively, to validate their efficacy. See [test_WGPLRT.m][e02],[test_NLRT.m][e03],[test_SBLUE.m][e04]. For WGPLRT and NLRT, ROC curves are plotted. We find that
- - WGPLRT performs extremely well on differentiating Normal/Normal, Normal/Gamma warpings. However, the performance deteriorates drastically when the warping functions are Gamma/Gamma, Gamma/Beta.
+For each sequence at monitored locations, Xtrian, we conduct WGPLRT and NLRT to make the local inference, i.e. to classifiy H0/H1. Finally, Yhat is passed to SBLUE to predict the labels at the un-monitored locations, Xtest. 
 
- - NLRT performs very slow.
- - SBLUE works quite well for the noisy data. However, decreasing the noises, i.e. increasing rho, does not improve the MSE loss significantly.
+To test the efficacy of individual algorithms, we also conduct experiments on WGPLRT, NLRT, SBLUE respectively. See [test_WGPLRT.m][e02],[test_NLRT.m][e03],[test_SBLUE.m][e04]. ROC curves are plotted for all algorithms, see [fig][e08]. We find that
+ - WGPLRT performs extremely well on differentiating distributions with full supports. However, the performance deteriorates drastically when the warping functions are Gamma/Gamma, Gamma/Beta, i.e. the distributions with partial supports. This is due to the failure of Laplaca Approximation to these distributions. Nontheless, WGPLRT may also be applicable when the distributions have densities concentrated within the interior of the support.
 
-In the future, we may also test the algorithm on the real dataset.
+ - NLRT performs reasonably well over multiple cases. However, it may not be the best choice when the data size is large, e.g. N>100,000, becuase NLRT computes the distance D0, D1 between each observation and the samples generated and creates matrices of size NxJ, J is the size of samples generated.
+ 
+ - SBLUE works quite well for the noisy data. However, when the confusion matrix is around 0.5 * eye(2). The performance becomes very poor due to the equivocal information from the data.
+
 
 | No. | Description                                     | Code       |
 | --- | ----------------------------------------------- | ---------- | 
@@ -21,20 +23,8 @@ In the future, we may also test the algorithm on the real dataset.
 
 
 
-
-
-## LRT
-The LRT folder contains the implementaion of [WGPLRT][e05] and [NLRT][e06]. 
-
-
-## SBLUE
-The SBLUE folder contains the impmentation of [SBLUE][e07]. 
-
-
 [e01]: Experiment/test_Synthetic_Data.m
 [e02]: Experiment/test_WGPLRT.m
 [e03]: Experiment/test_NLRT.m
 [e04]: Experiment/test_SBLUE.m
-[e05]:LRT/WGPLRT/WGPLRT.m
-[e06]:LRT/NLRT/NLRT.m
-[e07]:SBLUE/SBLUE.m
+[e08]:fig
