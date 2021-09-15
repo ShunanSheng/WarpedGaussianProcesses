@@ -11,21 +11,21 @@ warpfunc=@(pd,p) invCdf(pd,p);
 
 
 %% 1D data
-N = 100;
+N = 1000;
 x = linspace(-10,10,N)'; % Location of sensors
 % Simulate Warped Gaussian Process
 z=SimWGP(hyp,meanfunc,covfunc,warpfunc,x);
 
-%% 2D data
-% Location of sensors 
-n = 30; xinf=-10; xsup=10; N=n.^2;
-[X,Y]= meshgrid(linspace(xinf,xsup,n),linspace(xinf,xsup,n));
-xSp=reshape(X,[],1);
-ySp=reshape(Y,[],1); 
-x=[xSp,ySp];
-
-% Generate the lantent binary spatial field
-z=SimWGP(hyp,meanfunc,covfunc,warpfunc,[xSp,ySp]);
+% %% 2D data
+% % Location of sensors 
+% n = 30; xinf=-10; xsup=10; N=n.^2;
+% [X,Y]= meshgrid(linspace(xinf,xsup,n),linspace(xinf,xsup,n));
+% xSp=reshape(X,[],1);
+% ySp=reshape(Y,[],1); 
+% x=[xSp,ySp];
+% 
+% % Generate the lantent binary spatial field
+% z=SimWGP(hyp,meanfunc,covfunc,warpfunc,[xSp,ySp]);
 
 %% Partition the training and test set
 clc;

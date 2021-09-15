@@ -1,3 +1,16 @@
+mu = [0 0];
+Sigma = 1*eye(2);
+XU=[0 0];
+rng('default')  % For reproducibility
+binmcdf(XU,mu,Sigma)
+
+
+
+
+
+
+
+%%
 clear all; clc;
 
 A=[1,2;2,1];

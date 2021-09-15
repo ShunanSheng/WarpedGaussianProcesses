@@ -22,7 +22,7 @@ function Data=SimSynData(SP,H0,H1,warpfunc,modelHyp)
     hyp=SP.hyp;
 
     % Location of sensors 
-    n = 100; xinf=-10; xsup=10;
+    n = 50; xinf=-1; xsup=1;
     [X,Y]= meshgrid(linspace(xinf,xsup,n),linspace(xinf,xsup,n));
     xSp=reshape(X,[],1);
     ySp=reshape(Y,[],1); 

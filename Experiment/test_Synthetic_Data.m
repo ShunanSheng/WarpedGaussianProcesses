@@ -3,7 +3,7 @@ clear all,close all,clc
 % Create the synthetic dataset
 % Setup for Spatial Random field
 meanfunc = @meanConst; 
-covfunc = {@covSEiso}; ell = 1; sf = 1; hyp.cov=log([ell; sf]); q=0.5;
+covfunc = {@covSEiso}; ell = 1/2; sf = 1; hyp.cov=log([ell; sf]); q=0.5;
 pd=makedist("Binomial",'N',1,'p',q); % Bernouli(p)
 hyp=struct('mean',0,'cov',hyp.cov,'dist',pd);
 
@@ -55,8 +55,8 @@ Data=SimSynData(SP,H0,H1,warpfunc,modelHyp);
 %%
 clc;
 x=Data.x;y=Data.y;indexTrain=Data.indexTrain;indexTest=Data.indexTest;
-Xtrain=x(indexTrain);
-Xtest=x(indexTest);
+Xtrain=x(indexTrain,:);
+Xtest=x(indexTest,:);
 
 Ytrain=y(indexTrain);
 Ytest=y(indexTest);
@@ -133,35 +133,39 @@ Yhat(xI1)=yhat_int_1;
 Ytrain_hat=Yhat(indexTrain);
 %% Test performance of LRTs
 % Overall
-[tp,fp]=confusionMat(Ytrain,Ytrain_hat)
-sum((Ytrain-Ytrain_hat).^2)
+clc
+[tp,fp]=confusionMat(Ytrain,Ytrain_hat);
+
+display("Overall  "+":TPR="+tp+",FPR="+fp+",MSE="+sum((Ytrain-Ytrain_hat).^2))
 
 % WGPLRT
 YP_hat=[yhat_pt_0;yhat_pt_1];
 YP=[y(xP0);y(xP1)];
-[tp,fp]=confusionMat(YP,YP_hat)
-sum((YP-YP_hat).^2)
+[tp,fp]=confusionMat(YP,YP_hat);
+display("WGPLRT  "+":TPR="+tp+",FPR="+fp+",MSE="+sum((YP-YP_hat).^2))
 
 % NLRT
 YI_hat=[yhat_int_0;yhat_int_1];
 YI=[y(xI0);y(xI1)];
-[tp,fp]=confusionMat(YI,YI_hat)
-sum((YI-YI_hat).^2)
+[tp,fp]=confusionMat(YI,YI_hat);
+
+display("NLRT  "+":TPR="+tp+",FPR="+fp+",MSE="+sum((YI-YI_hat).^2))
 
 
 %% SBLUE
 clc;
 % Offline phase, super super slow
+tic
 SBLUEprep=SBLUE_stats_prep(covfunc,hyp.cov,Xtrain,Xtest,q); 
+toc
 
 %%
 % Online phase: given the knowlegde of the LRT performance
-rho=0.99;
-A=[rho,1-rho;1-rho,rho];
+rho=1;lambda=0.01;
+A=[rho,1-rho;lambda,1-lambda];
 SBLUE=SBLUE_stats(SBLUEprep,A,q);
 Ypred=SBLUE_pred(SBLUE,Ytrain_hat);
-
-[tp,fp]=confusionMat(Ytest,Ypred)
-sum((Ytest-Ypred).^2)
+[tp,fp]=confusionMat(Ytest,Ypred);
+display("SBLUE  "+":TPR="+tp+",FPR="+fp+",MSE="+sum((Ytest-Ypred).^2/length(Ytest)))
 
 
