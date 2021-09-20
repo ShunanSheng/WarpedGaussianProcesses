@@ -170,6 +170,7 @@ A2=[rho(2),1-rho(2);1-lambda(2),lambda(2)];
 
 SBLUE=SBLUE_stats(SBLUEprep,A1,A2,liP,liI,q);
 Ypred=SBLUE_pred(SBLUE,Ytrain_hat);
+R=SBLUE_risk(SBLUE);
 [tp,fp]=confusionMat(Ytest,Ypred);
 display("SBLUE  "+":TPR="+tp+",FPR="+fp+",MSE="+sum((Ytest-Ypred).^2/length(Ytest)))
 
