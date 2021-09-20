@@ -4,7 +4,7 @@ clear all;close all;clc;
 % Set up the spatial fied
 meanfunc = @meanConst; 
 covfunc = {@covSEiso}; ell = 1; sf = 1; hyp.cov=log([ell; sf]);
-q=0.8;
+q=0.5;
 pd=makedist("Binomial",'N',1,'p',q); % Bernouli(p)
 hyp=struct('mean',0,'cov',hyp.cov,'dist',pd);
 warpfunc=@(pd,p) invCdf(pd,p);
@@ -42,11 +42,44 @@ SBLUEprep=SBLUE_stats_prep(covfunc,hyp.cov,Xtrain,xstar,q);
 
 %%
 clc;
+rho=[0.9,0.99];delta=[0.9,0.99];
+A1=[rho(1),1-rho(1);1-delta(1),delta(1)];
+A2=[rho(2),1-rho(2);1-delta(2),delta(2)];
+xP=indexTrain(1:2:end);
+xI=setdiff(indexTrain,xP);
+liP=ismember(indexTrain,xP)';
+liI=ismember(indexTrain,xI)';
+
+M=10;
+YT=repmat(Ytrue,[1,M]);
+Yhat_noise=repmat( Yhat, [1,M] );
+for j=1:M
+    rnd=rand(length(Yhat),1);
+    rnd1=rnd(liP)>rho(1);
+    rnd2=rnd(liI)>rho(2);
+    
+    Yhat_noise(liP,j)=(1-rnd1).*Yhat_noise(liP,j)...
+                                +rnd1.*(1-Yhat_noise(liP,j));
+                            
+    Yhat_noise(liI,j)=(1-rnd2).*Yhat_noise(liI,j)...
+                                +rnd2.*(1-Yhat_noise(liI,j));                        
+end
+
+% Apply SBLUE
+SBLUE=SBLUE_stats(SBLUEprep,A1,A2,liP,liI,q);
+Ypred=SBLUE_pred(SBLUE,Yhat_noise);
+% Evaluate the MSE and Accuracy
+[tp,fp]=confusionMat(YT,Ypred)
+
+y=[Yhat,Yhat_noise];
+
+
+%%
+clc;
 % In the experiment,
 % we may use Rho to control both true negative & true positive rate,
 Rho=linspace(0,1,100)';
-L=length(Rho);MSE=zeros(L,1);Accuracy=zeros(L,1);
-TP=zeros(L,1);FP=zeros(L,1);
+L=length(Rho);TP=zeros(L,1);FP=zeros(L,1);
 
 M=10000;
 YT=repmat(Ytrue,[1,M]);

@@ -19,10 +19,10 @@ function SBLUEprep=SBLUE_stats_prep(covfunc,hypcov,Xtrain,xstar,q)
         
 
         P1=zeros(N);P2=zeros(N);P3=zeros(N);P4=zeros(N);
-        T1=[-c -c];
-        T2=[-c c];
-        T3=[c -c];
-        T4=[c c];
+        T1=[c c];
+        T2=[c -c];
+        T3=[-c c];
+%         T4=[-c -c];
         for i=1:N - 1
             for j=i+1:N
                 Ktemp=[K(i,i),K(i,j);K(i,j),K(j,j)];

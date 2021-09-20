@@ -1,3 +1,35 @@
+
+clc
+rng('default')
+Y=[1,0,1,0,1,1,1]';
+
+index=logical([0,1,1,0,1,0,1]');
+M=length(Y(index))
+rnd=rand(M,1);
+Yindex=Y(index)
+
+Yindex1=Yindex;
+
+for i=1:M
+    x=rnd(i);
+    if x>0.5
+        Yindex1(i)=1-Yindex(i);
+    end
+end
+Yindex1
+
+
+
+x=rnd>0.5;
+
+Y2(index)=(1-x).*Y(index)+x.*(1-Y(index));
+
+Y2(index)
+
+
+
+
+%%
 mu = [0 0];
 Sigma = 1*eye(2);
 XU=[0 0];
