@@ -20,10 +20,10 @@ pd0=makedist('Normal','mu',2,'sigma',4)
 meanfunc1 = @meanConst; 
 covfunc1 = {@covSEiso}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
 % covfunc1 = {@covMaterniso, 3}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
-% pd1=makedist('Gamma','a',1,'b',1);
-% pd1=makedist('Beta','a',1,'b',1);
-% pd1=makedist('Normal','mu',0,'sigma',1);
-pd1=makedist('Logistic','mu',10,'sigma',10)
+% pd1=makedist('Gamma','a',1,'b',1)
+% pd1=makedist('Beta','a',1,'b',1)
+pd1=makedist('Normal','mu',0,'sigma',1)
+% pd1=makedist('Logistic','mu',10,'sigma',10)
 
 %%% Parameters for the sensor network
 T=10; M=20; K=20; snP=0.1; snI=0.1;
@@ -111,7 +111,7 @@ J=100000; % number of samples per hypothesis
 [ZI0,ZI1]=NLRT_gene(hyp0,CI0,muI0,hyp1,CI1,muI1, warpfunc,K,kw,snI,J); % generate J samples of integral observations from null ...                                                                   % and alternative hypothesis
 
 % parameters for NLRT
-delta=5; % distance tolerance
+delta=1; % distance tolerance
 % logGammaI=NLRT_opt_logGamma(hyp0,CI0,muI0,ZI0,ZI1,warpfunc,sumstats,d,K,kw,snI,delta,alpha)
 % In practice, NLRT performs so good that Lambda is most likely to be
 % infinity, so we may set logGammaI=1 for simplicity.
@@ -161,7 +161,7 @@ toc
 
 %%
 % Online phase: given the knowlegde of the LRT performance
-rho=1;lambda=0.01;
+rho=0.97;lambda=0;
 A=[rho,1-rho;lambda,1-lambda];
 SBLUE=SBLUE_stats(SBLUEprep,A,q);
 Ypred=SBLUE_pred(SBLUE,Ytrain_hat);
