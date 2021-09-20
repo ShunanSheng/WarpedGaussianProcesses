@@ -161,9 +161,14 @@ toc
 
 %%
 % Online phase: given the knowlegde of the LRT performance
-rho=0.97;lambda=0;
-A=[rho,1-rho;lambda,1-lambda];
-SBLUE=SBLUE_stats(SBLUEprep,A,q);
+
+liP=ismember(indexTrain,[xP0;xP1]);
+liI=ismember(indexTrain,[xI0;xI1]);
+rho=[1-0.045,1-0.02];lambda=[1,1];
+A1=[rho(1),1-rho(1);1-lambda(1),lambda(1)];
+A2=[rho(2),1-rho(2);1-lambda(2),lambda(2)];
+
+SBLUE=SBLUE_stats(SBLUEprep,A1,A2,liP,liI,q);
 Ypred=SBLUE_pred(SBLUE,Ytrain_hat);
 [tp,fp]=confusionMat(Ytest,Ypred);
 display("SBLUE  "+":TPR="+tp+",FPR="+fp+",MSE="+sum((Ytest-Ypred).^2/length(Ytest)))
