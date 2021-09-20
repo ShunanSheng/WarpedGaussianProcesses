@@ -21,19 +21,20 @@ function SBLUEprep=SBLUE_stats_prep(covfunc,hypcov,Xtrain,xstar,q)
         P1=zeros(N);P2=zeros(N);P3=zeros(N);P4=zeros(N);
         T1=[c c];
         T2=[c -c];
-        T3=[-c c];
+%         T3=[-c c];
 %         T4=[-c -c];
         for i=1:N - 1
             for j=i+1:N
-                Ktemp=[K(i,i),K(i,j);K(i,j),K(j,j)];
+                K1=[1,K(i,j);K(i,j),1];
+                K2=[1,-K(i,j);-K(i,j),1];
 %                 if min(eig(Ktemp))<0 || ~issymmetric(Ktemp)
 %                     disp(Ktemp)
 %                     error("Ktemp is not psd")
 %                 end
-                P1(i,j)=binmcdf(T1,zeros(1,2),Ktemp);
-                P2(i,j)=binmcdf(T2,zeros(1,2),Ktemp);
-                P3(i,j)=binmcdf(T3,zeros(1,2),Ktemp);
-                P4(i,j)=1-P1(i,j)-P2(i,j)-P3(i,j);
+                P1(i,j)=binmcdf(T1,zeros(1,2),K1);
+                P2(i,j)=binmcdf(T2,zeros(1,2),K2);
+                P3(i,j)=P2(i,j); % Due to symmetry about y=x
+                P4(i,j)=1-P1(i,j)-P2(i,j)-P3(i,j); % the probabilities sum to 1
             end
         end
         
