@@ -33,7 +33,7 @@ function SBLUEprep=SBLUE_stats_prep(covfunc,hypcov,Xtrain,xstar,q)
 %                 end
                 P1(i,j)=binmcdf(T1,zeros(1,2),K1);
                 P2(i,j)=binmcdf(T2,zeros(1,2),K2);
-                P3(i,j)=P2(i,j); % Due to symmetry about y=x
+                P3(i,j)=P2(i,j); % Due to symmetry against y=x
                 P4(i,j)=1-P1(i,j)-P2(i,j)-P3(i,j); % the probabilities sum to 1
             end
         end

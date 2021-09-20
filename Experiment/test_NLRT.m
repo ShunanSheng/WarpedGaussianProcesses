@@ -6,6 +6,7 @@ clear all,close all,clc
 %%% H0 Null hypothesis
 meanfunc0 = @meanConst; 
 covfunc0 = {@covSEiso}; ell0 =1/2; sf0 = 1; hyp0.cov=log([ell0; sf0]);
+% covfunc0={@covFBM};sf0=1;h0=1/2;hyp0.cov=[log(sf0);-log(1/h0-1)];
 % pd0=makedist('Normal','mu',10,'sigma',1)
 % pd0=makedist('Normal','mu',0,'sigma',1);
 pd0=makedist('Gamma','a',2,'b',4);
@@ -71,7 +72,7 @@ J=10000; % number of samples per hypothesis
 
 %% Plot ROC
 clc;
-N=1000;M=5;LogGamma=linspace(-100,100,N);Delta=linspace(0.5,5,M);% distance tolerance
+N=1000;M=4;LogGamma=linspace(-100,100,N);Delta=linspace(0.5,2,M);% distance tolerance
 TP=zeros(N,M);FP=zeros(N,M);
 [D0,D1]=NLRT_stats(ZI,ZI0,ZI1,sumstats,d); % compute the distance matrix
 
@@ -102,9 +103,10 @@ end
 plotROC(TP,FP,[],FigLegend)
 
 %% find the optimal logGamma
-yn=zeros(nI,1); 
-optlogGamma=NLRT_opt_logGamma(hyp0,C0,mu0,ZI0,ZI1,warpfunc,sumstats,d,K,kw,snI,1,alpha)
+delta=1;alpha=0.05;
+optlogGamma=NLRT_opt_logGamma(hyp0,C0,mu0,ZI0,ZI1,warpfunc,sumstats,d,K,kw,snI,delta,alpha)
 
 %% The performance at the opt_logGamma
+Lambda=NLRT_pred_delta(D0,D1,delta);
 yhat=NLRT_pred_gamma(Lambda,optlogGamma); % Compute yhat given delta and logGamma
 [tp,fp]=confusionMat(yn,yhat)

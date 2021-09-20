@@ -1,4 +1,8 @@
 
+clear all
+plot(0:10,0:10)
+text(5,5,'TEST TEXT')
+%%
 clc
 rng('default')
 Y=[1,0,1,0,1,1,1]';
