@@ -1,5 +1,5 @@
 function SBLUEprep=SBLUE_stats_prep(covfunc,hypcov,Xtrain,xstar,q)
-        % Compute the variables in SBLUE without knowlegde of the confusion
+        % Compute the variables in SBLUE without knowlegde of the transition
         % matrix A
         %
         % Input : 

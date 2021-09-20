@@ -1,11 +1,11 @@
 function SBLUE=SBLUE_stats(SBLUEprep,A1,A2,liP,liI,q)
-    % Compute the mean, covariance in SBLUE with knowlegde of the confusion matrix
+    % Compute the mean, covariance in SBLUE with knowlegde of the transition matrix
     %
     % Input : 
-    % SBLUEprep: the SBLUE statistics without knowing the confusion matrix
+    % SBLUEprep: the SBLUE statistics without knowing the transition matrix
     % A
-    % A1 : confusion matrix from WGPLRT
-    % A2 : confusion matirx from NLRT
+    % A1 : transition matrix from WGPLRT
+    % A2 : transition matirx from NLRT
     % liI : the vector with logical values tracking the location of integral observations
     % e.g. liI=(1,0,0,1,0,1)'
     % liP : the vector with logical values tracking the location of point observations
