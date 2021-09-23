@@ -22,8 +22,8 @@ covfunc1 = {@covSEiso}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
 % covfunc1 = {@covMaterniso, 3}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
 % pd1=makedist('Gamma','a',1,'b',1)
 % pd1=makedist('Beta','a',1,'b',1)
-pd1=makedist('Normal','mu',0,'sigma',1)
-% pd1=makedist('Logistic','mu',10,'sigma',10)
+% pd1=makedist('Normal','mu',0,'sigma',1)
+pd1=makedist('Logistic','mu',2,'sigma',5)
 
 %%% Parameters for the sensor network
 T=10; M=20; K=20; snP=0.1; snI=0.1;
@@ -113,7 +113,7 @@ J=100000; % number of samples per hypothesis
 % parameters for NLRT
 delta=1; % distance tolerance
 % logGammaI=NLRT_opt_logGamma(hyp0,CI0,muI0,ZI0,ZI1,warpfunc,sumstats,d,K,kw,snI,delta,alpha)
-% In practice, NLRT performs so good that Lambda is most likely to be
+% In practice, NLRT performs so unstble that Lambda is most likely to be
 % infinity, so we may set logGammaI=1 for simplicity.
 logGammaI=log(1);
 
@@ -141,15 +141,15 @@ display("Overall  "+":TPR="+tp+",FPR="+fp+",MSE="+sum((Ytrain-Ytrain_hat).^2))
 % WGPLRT
 YP_hat=[yhat_pt_0;yhat_pt_1];
 YP=[y(xP0);y(xP1)];
-[tp,fp]=confusionMat(YP,YP_hat);
-display("WGPLRT  "+":TPR="+tp+",FPR="+fp+",MSE="+sum((YP-YP_hat).^2))
+[wtp,wfp]=confusionMat(YP,YP_hat);
+display("WGPLRT  "+":TPR="+wtp+",FPR="+wfp+",MSE="+sum((YP-YP_hat).^2))
 
 % NLRT
 YI_hat=[yhat_int_0;yhat_int_1];
 YI=[y(xI0);y(xI1)];
-[tp,fp]=confusionMat(YI,YI_hat);
+[ntp,nfp]=confusionMat(YI,YI_hat);
 
-display("NLRT  "+":TPR="+tp+",FPR="+fp+",MSE="+sum((YI-YI_hat).^2))
+display("NLRT  "+":TPR="+ntp+",FPR="+nfp+",MSE="+sum((YI-YI_hat).^2))
 
 
 %% SBLUE
@@ -164,7 +164,7 @@ toc
 
 liP=ismember(indexTrain,[xP0;xP1]);
 liI=ismember(indexTrain,[xI0;xI1]);
-rho=[1-0.045,1-0.02];lambda=[1,1];
+rho=[1-wfp,1-nfp];lambda=[wtp,ntp];
 A1=[rho(1),1-rho(1);1-lambda(1),lambda(1)];
 A2=[rho(2),1-rho(2);1-lambda(2),lambda(2)];
 

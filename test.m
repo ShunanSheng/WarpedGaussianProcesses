@@ -1,4 +1,107 @@
+%% Include ACF, PACF in the summary statistics in NLRT
+clc;clear all;
+rng('default') % For reproducibility
+ncols=3;
+e = randn(1000,ncols);
+y = filter([1 -11],1,e);
+lag=1;
+acf=zeros(lag+1,ncols);
+for col=1:ncols
+    acf(:,col) = autocorr(y(:,col),lag);
+end
 
+
+
+
+%%
+% Check validity of S-BLUE, mean and covariance
+clear all;clc;
+% Set up the spatial fied
+meanfunc = @meanConst; 
+% covfunc = {@covSEiso}; ell = 1/2; sf = 1; hyp.cov=log([ell; sf]);
+% covfunc={@covFBM};sf0=1;h0=1/2;hyp.cov=[log(sf0);-log(1/h0-1)];
+covfunc = {@covMaterniso, 3}; ell1=1/2; sf1=1; hyp.cov=log([ell1; sf1]);
+q=0.5;
+pd=makedist("Binomial",'N',1,'p',q); % Bernouli(p)
+hyp=struct('mean',0,'cov',hyp.cov,'dist',pd);
+warpfunc=@(pd,p) invCdf(pd,p);
+
+
+%% 1D data
+N = 1000;
+x = linspace(-10,10,N)'; % Location of sensors
+% Simulate Warped Gaussian Process
+z=SimWGP(hyp,meanfunc,covfunc,warpfunc,x);
+
+%% Partition the training and test set
+clc;
+indexTest=1:5:N;
+indexTrain=setdiff(1:N,indexTest);
+
+Yhat=z(indexTrain);
+Ytrue=z(indexTest);
+Xtrain=x(indexTrain,:);
+xstar=x(indexTest,:);
+
+SBLUEprep=SBLUE_stats_prep(covfunc,hyp.cov,Xtrain,xstar,q); 
+% the computation of P1,...,P4 is super slow
+
+%% Use different A1 and A2 for SBLUE
+clc;
+rho=[1,1];lambda=[1,1];
+A1=[rho(1),1-rho(1);1-lambda(1),lambda(1)];
+A2=[rho(2),1-rho(2);1-lambda(2),lambda(2)];
+xP=indexTrain(1:2:end);
+xI=setdiff(indexTrain,xP);
+liP=ismember(indexTrain,xP)';
+liI=ismember(indexTrain,xI)';
+
+M=1000;
+YT=zeros(length(x),M);G_star=zeros(length(indexTest),M);
+for j=1:M
+    f=SimGP(hyp,meanfunc,covfunc,x);
+    YT(:,j)=warpfunc(hyp.dist,f);
+    G_star(:,j)=f(indexTest);
+end
+
+
+
+YT_noise=zeros(length(indexTrain),M);
+
+for j=1:M
+    rnd=rand(length(Yhat),1);
+    rnd1=rnd(liP)>rho(1);
+    rnd2=rnd(liI)>rho(2);
+    
+    Yhat_noise(liP,j)=(1-rnd1).*YT(liP,j)...
+                                +rnd1.*(1-YT(liP,j));
+                            
+    Yhat_noise(liI,j)=(1-rnd2).*YT(liI,j)...
+                                +rnd2.*(1-YT(liI,j));                        
+end
+
+
+% Apply SBLUE
+SBLUE=SBLUE_stats(SBLUEprep,A1,A2,liP,liI,q);
+mY_empi=mean(Yhat_noise,2);
+diff_mY=SBLUE.mY-mY_empi;
+covY_empi=cov(Yhat_noise');
+diff_covY=SBLUE.CovY-covY_empi;
+
+covgY_empi_ori=cov([Yhat_noise;G_star]');
+covgY_empi=covgY_empi_ori(length(indexTrain)+1:end,1:length(indexTrain));
+diff_covgY=SBLUE.Covg-covgY_empi;
+
+disp("Done")
+
+% Ypred=SBLUE_pred(SBLUE,Yhat_noise);
+% % Evaluate the MSE and Accuracy
+% MSE=sum((Ypred(:)-YT(:)).^2)/length(Ypred(:))
+
+
+
+
+%%
 clear all
 plot(0:10,0:10)
 text(5,5,'TEST TEXT')
