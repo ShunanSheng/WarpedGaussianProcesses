@@ -1,18 +1,16 @@
-function Cov_Y=covY(p,CovP,mY,c)
+function Cov_Y=covY(p,CovP,mY,chat)
     % Calculate Cov(Yhat,Yhat)
     %
     % Input : 
     % p : the modified confusion probability
     % CovP: structure stores P1,P2,P3,P4
     % mY : mean vector of Yhat
-    % c : invNormCdf(1-q)
+    % chat : the normalzied threshold
     %
     % Output:
     % Cov_Y : Cov(Yhat,Yhat)
     
-    
-    N=size(mY,1);
-    
+    N=length(mY);
     % Get the raw information for CovY, i.e. P(gi<c,gj<c),P(gi<c,gj>c),etc
     P1=CovP.P1;
     P2=CovP.P2;
@@ -33,7 +31,7 @@ function Cov_Y=covY(p,CovP,mY,c)
     % Replace the diagonal elements
     % The current varY :=E(Y_i^2)
     
-    varY=(diag(p1).*normcdf(c)+diag(p4).*normcdf(-c)).*ones(N,1);
+    varY=diag(p1).*normcdf(chat)+diag(p4).*normcdf(-chat);
     Cov_Y(1:N + 1:end) = varY;
     
     % Subtract E(Y)^2

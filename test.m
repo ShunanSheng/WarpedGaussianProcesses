@@ -1,3 +1,10 @@
+%%
+clc
+f=@(x) x.*exp(-x.^2/2);
+c=-10;
+integral(f,c,Inf)-exp(-c^2/2)
+
+
 %% Include ACF, PACF in the summary statistics in NLRT
 clc;clear all;
 rng('default') % For reproducibility
@@ -11,20 +18,20 @@ for col=1:ncols
 end
 
 
-
-
 %%
 % Check validity of S-BLUE, mean and covariance
 clear all;clc;
 % Set up the spatial fied
-meanfunc = @meanConst; 
+meanfunc = @meanConst; hyp.mean=1;
 % covfunc = {@covSEiso}; ell = 1/2; sf = 1; hyp.cov=log([ell; sf]);
 % covfunc={@covFBM};sf0=1;h0=1/2;hyp.cov=[log(sf0);-log(1/h0-1)];
 covfunc = {@covMaterniso, 3}; ell1=1/2; sf1=1; hyp.cov=log([ell1; sf1]);
 q=0.5;
-pd=makedist("Binomial",'N',1,'p',q); % Bernouli(p)
-hyp=struct('mean',0,'cov',hyp.cov,'dist',pd);
-warpfunc=@(pd,p) invCdf(pd,p);
+% pd=makedist("Binomial",'N',1,'p',q); % Bernouli(p)
+pd=[];c=0;
+hyp=struct('mean',hyp.mean,'cov',hyp.cov,'dist',pd,'thres',c);
+% warpfunc=@(pd,p) invCdf(pd,p);
+warpfunc=@(c,x) indicator(c,x);
 
 
 %% 1D data
@@ -43,7 +50,7 @@ Ytrue=z(indexTest);
 Xtrain=x(indexTrain,:);
 xstar=x(indexTest,:);
 
-SBLUEprep=SBLUE_stats_prep(covfunc,hyp.cov,Xtrain,xstar,q); 
+SBLUEprep=SBLUE_stats_prep(covfunc,meanfunc,hyp,Xtrain,xstar) 
 % the computation of P1,...,P4 is super slow
 
 %% Use different A1 and A2 for SBLUE
@@ -60,13 +67,13 @@ M=1000;
 YT=zeros(length(x),M);G_star=zeros(length(indexTest),M);
 for j=1:M
     f=SimGP(hyp,meanfunc,covfunc,x);
-    YT(:,j)=warpfunc(hyp.dist,f);
+%     YT(:,j)=warpfunc(hyp.dist,f);
+    YT(:,j)=warpfunc(hyp.thres,f);
     G_star(:,j)=f(indexTest);
 end
 
 
-
-YT_noise=zeros(length(indexTrain),M);
+Yhat_noise=zeros(length(indexTrain),M);
 
 for j=1:M
     rnd=rand(length(Yhat),1);
@@ -80,9 +87,12 @@ for j=1:M
                                 +rnd2.*(1-YT(liI,j));                        
 end
 
+transitionMat=SBLUE_confusion(A1,A2,liP,liI);
+% compute the adjusted confusion probability
 
+%%
 % Apply SBLUE
-SBLUE=SBLUE_stats(SBLUEprep,A1,A2,liP,liI,q);
+SBLUE=SBLUE_stats(SBLUEprep,transitionMat,c);
 mY_empi=mean(Yhat_noise,2);
 diff_mY=SBLUE.mY-mY_empi;
 covY_empi=cov(Yhat_noise');

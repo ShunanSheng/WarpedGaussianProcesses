@@ -2,25 +2,23 @@
 clear all;close all;clc;
 
 % Set up the spatial fied
-meanfunc = @meanConst; 
+meanfunc = @meanConst;hyp.mean=0;
 % covfunc = {@covSEiso}; ell = 1/2; sf = 1; hyp.cov=log([ell; sf]);
 % covfunc={@covFBM};sf0=1;h0=1/2;hyp.cov=[log(sf0);-log(1/h0-1)];
 covfunc = {@covMaterniso, 3}; ell1=1/2; sf1=1; hyp.cov=log([ell1; sf1]);
-q=0.5;
-pd=makedist("Binomial",'N',1,'p',q); % Bernouli(p)
-hyp=struct('mean',0,'cov',hyp.cov,'dist',pd);
-warpfunc=@(pd,p) invCdf(pd,p);
+% q=0.5;pd=makedist("Binomial",'N',1,'p',q); % Bernouli(p)
+pd=[];c=0;
+hyp=struct('mean',hyp.mean,'cov',hyp.cov,'dist',pd,'thres',c);
+% warpfunc=@(pd,p) invCdf(pd,p);
+warpfunc=@(c,x) indicator(c,x);
 
 
 %% 1D data
 N = 1000;
 x = linspace(-100,100,N)'; % Location of sensors
 % Simulate Warped Gaussian Process
-
 g=SimGP(hyp,meanfunc,covfunc,x);
-z=warpfunc(hyp.dist,g);
-
-
+z=warpfunc(c,g);
 % z=SimWGP(hyp,meanfunc,covfunc,warpfunc,x);
 
 % %% 2D data
@@ -44,12 +42,13 @@ Ytrue=z(indexTest);
 Xtrain=x(indexTrain,:);
 xstar=x(indexTest,:);
 
-SBLUEprep=SBLUE_stats_prep(covfunc,hyp.cov,Xtrain,xstar,q); 
+SBLUEprep=SBLUE_stats_prep(covfunc,meanfunc,hyp,Xtrain,xstar); 
 % the computation of P1,...,P4 is super slow
+% compute the transition matrix of each sensor
 
 %% noisy SBLUE
-
-rho=[0.8,0.8];lambda=[0.8,0.8];
+clc;
+rho=[0.9,0.9];lambda=[0.9,0.9];
 A1=[rho(1),1-rho(1);1-lambda(1),lambda(1)];
 A2=[rho(2),1-rho(2);1-lambda(2),lambda(2)];
 xP=indexTrain(1:2:end);
@@ -57,7 +56,7 @@ xI=setdiff(indexTrain,xP);
 liP=ismember(indexTrain,xP)';
 liI=ismember(indexTrain,xI)';
 
-M=10000;
+M=1000;
 YT=repmat(Ytrue,[1,M]);
 Yhat_noise=repmat( Yhat, [1,M] );
 % Generate the noisy 
@@ -73,12 +72,15 @@ for j=1:M
                                 +rnd2.*(1-Yhat_noise(liI,j));                        
 end
 
+transitionMat=SBLUE_confusion(A1,A2,liP,liI);
+% compute the adjusted confusion probability
+
 
 % Apply SBLUE
-SBLUE=SBLUE_stats(SBLUEprep,A1,A2,liP,liI,q);
+SBLUE=SBLUE_stats(SBLUEprep,transitionMat,c);
 Ypred=SBLUE_pred(SBLUE,Yhat_noise);
 % Evaluate the MSE and Accuracy
-MSE_SBLUE_noisy=sum((Ypred(:)-YT(:)).^2)/length(Ypred(:));
+MSE_SBLUE_noisy=sum((Ypred(:)-YT(:)).^2)/length(Ypred(:))
 
 %% pure SBLUE without noise
 clc;
@@ -90,7 +92,7 @@ xI=setdiff(indexTrain,xP);
 liP=ismember(indexTrain,xP)';
 liI=ismember(indexTrain,xI)';
 
-M=10000;
+M=1000;
 YT=repmat(Ytrue,[1,M]);
 Yhat_noise=repmat( Yhat, [1,M] );
 % Generate the noisy 
@@ -107,8 +109,11 @@ for j=1:M
 end
 
 
+transitionMat=SBLUE_confusion(A1,A2,liP,liI);
+% compute the adjusted confusion probability
+
 % Apply SBLUE
-SBLUE=SBLUE_stats(SBLUEprep,A1,A2,liP,liI,q);
+SBLUE=SBLUE_stats(SBLUEprep,transitionMat,c);
 Ypred=SBLUE_pred(SBLUE,Yhat_noise);
 % Evaluate the MSE and Accuracy
 MSE_SBLUE=sum((Ypred(:)-YT(:)).^2)/length(Ypred(:));
@@ -150,7 +155,6 @@ for i=1:L % We expect when rho is extreme, i.e. close to 0 or 1
         rnd1=rnd>tp; % filp the 1 to 0 with prob 1-tp
         rnd2=rnd> (1-fp);% filp the 0 to 1 with prob fp
  
-        
         Y1=Yhat_noise(:,j)==1;
         Y0=Yhat_noise(:,j)==0;
         
@@ -170,8 +174,10 @@ for i=1:L % We expect when rho is extreme, i.e. close to 0 or 1
         Yhat_noise(idI0,j)=(1-rnd2(idI0)).*Yhat_noise(idI0,j)...
                                     +rnd2(idI0).*(1-Yhat_noise(idI0,j)); 
     end
+    
+    transitionMat=SBLUE_confusion(A,A,liP,liI);
     % Apply SBLUE
-    SBLUE=SBLUE_stats(SBLUEprep,A,A,liP,liI,q);
+    SBLUE=SBLUE_stats(SBLUEprep,transitionMat,c);
     Ypred=SBLUE_pred(SBLUE,Yhat_noise);
     % Evaluate the MSE and Accuracy
     MSE(i)=sum((Ypred(:)-YT(:)).^2)/length(Ypred(:));
@@ -192,4 +198,3 @@ xlabel("FPR")
 ylabel("MSE")
 legend("MSE","TPR")
 hold on;
-

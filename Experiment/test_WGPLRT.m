@@ -12,11 +12,11 @@ covfunc0 = {@covSEiso}; ell0 =1/2; sf0 = 1; hyp0.cov=log([ell0; sf0]);
 % covfunc0={@covFBM};sf0=1;h0=1/2;hyp0.cov=[log(sf0);-log(1/h0-1)];
 
 % pd0=makedist('Normal','mu',2,'sigma',4)
-pd0=makedist('Gamma','a',10,'b',1/2)
+% pd0=makedist('Gamma','a',10,'b',1/2)
 % pd0=makedist('Logistic','mu',8,'sigma',2)
 % pd0=makedist('Beta','a',4,'b',6)
 % pd0 = makedist('Stable','alpha',0.5,'beta',0.8,'gam',1,'delta',0)
-% pd0=makedist('tLocationScale','mu',-1,'sigma',1,'nu',3)
+pd0=makedist('tLocationScale','mu',-1,'sigma',4,'nu',3)
 
 
 %%% H1 Alternative hypothesis
@@ -24,12 +24,12 @@ meanfunc1 = @meanConst;
 covfunc1 = {@covSEiso}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
 % covfunc1 = {@covMaterniso, 3}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
 
-pd1=makedist('Gamma','a',20,'b',1/2)
+% pd1=makedist('Gamma','a',20,'b',1/2)
 % pd1=makedist('Beta','a',6,'b',4)
-% pd1=makedist('Logistic','mu',10,'sigma',10)
+% pd1=makedist('Logistic','mu',2,'sigma',4)
 % pd1=makedist('Normal','mu',2,'sigma',4)
 % pd1=makedist('Normal','mu',1,'sigma',2)
-% pd1=makedist('tLocationScale','mu',-1,'sigma',1,'nu',3)
+pd1=makedist('tLocationScale','mu',2,'sigma',4,'nu',3)
 
 
 %%% Parameters for the sensor network
@@ -38,8 +38,8 @@ T=50; M=100; snP=0.1;
 
 
 %%% Lower/upper bound for optimization in Laplace Approximation,i.e. the range of W
-% warpdist0="Normal";warpdist1="Normal";
-warpdist0="Gamma";warpdist1="Gamma";
+warpdist0="Normal";warpdist1="Normal";
+% warpdist0="Gamma";warpdist1="Gamma";
 
 [lb0,ub0]=lowUpBound(warpdist0,M);
 [lb1,ub1]=lowUpBound(warpdist1,M);
@@ -115,9 +115,6 @@ yhat=WGPLRT_pred(ZP,LRT,logGamma);
 [tp,fp]=confusionMat(yn,yhat);
 disp("At significance level="+alpha+", the optlogGamma="+logGamma+", tp="+tp+",fp="+fp);
 
-
-
-end
 
 
 

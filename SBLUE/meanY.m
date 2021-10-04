@@ -1,12 +1,13 @@
-function m=meanY(p,c,N)
+function m=meanY(p,chat)
     % Calculate E(Yhat)
     %
     % Input : 
-    % p : the modified confusion probability
-    % c : invNormCdf(1-q)
-    % N : the length
+    % p : the transition probability
+    % chat : the normalzied threshold
     %
     % Output:
     % m: E(Yhat)
-    m=(p.p11.*normcdf(-c)+p.p01.*normcdf(c)).*ones(N,1);
+
+
+    m=p.p11.*normcdf(-chat)+p.p01.*normcdf(chat);
 end
