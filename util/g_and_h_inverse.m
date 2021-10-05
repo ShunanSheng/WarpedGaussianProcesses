@@ -9,8 +9,8 @@ function [z, iter] = g_and_h_inverse(x, g, h, tol)
 %       z: corresponding z value for the standard normal distribution
 %       iter: number of iterations
 
-n = length(x);
-z = ones(n, 1);
+[n,m] = size(x);
+z = ones(n, m);
 
 if ~exist('tol', 'var') || isempty(tol)
     tol = 1e-8;
@@ -81,7 +81,7 @@ if any(exclude_list)
     z(exclude_list) = zr;
 end
 
-assert(max(abs(t_func(z) - x)) < tol, 'unexpected error');
+assert(max(abs(t_func(z) - x),[],'all') < tol, 'unexpected error');
 
 end
 

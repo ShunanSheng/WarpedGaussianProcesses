@@ -8,6 +8,5 @@ function m=meanY(p,chat)
     % Output:
     % m: E(Yhat)
 
-
     m=p.p11.*normcdf(-chat)+p.p01.*normcdf(chat);
 end

@@ -1,3 +1,87 @@
+clc;clear
+pd1=makedist("Laplace","mu",0,"sigma",1)
+x=[1,2]';
+% pd1=makedist("Normal","mu",0,"sigma",1)
+cdf(pd1,x)
+
+g=1;h=1;loc=10;sca=2;
+[v, iter] = g_and_h_inverse(x, g, h)
+[p, iter] = g_and_h_cdf(x, g, h, loc, sca)
+
+pd=makedist("g_and_h","g",1,"h",1,'loc',loc,'sca',sca)
+cdf(pd,x)
+cdf(pd,icdf(pd,[0.1,0.2]'))
+pdf(pd,x)
+
+gradientDist(pd,x)
+
+
+%%
+pd=makedist("Normal")
+pd=makedist("Laplace")
+%%
+
+p=g_and_h_pdf(x, g, h, loc, sca)
+
+v=linspace(0,5,10)';
+delta=0.00000001;
+V=[v,v+delta];
+% y=g_and_h(V, g, h, loc, sca)
+y=exp(V.^2);
+df=diff(y,1,2)/delta
+
+diff=df-exp(v).*2.*v
+
+dgh=grad_g_and_h(v, g, h, loc, sca)-df
+% df=gradientDist(pd,v)
+
+
+%% when h=g=0, the g_and_h transformation is effectively the identity
+clc;clear
+g=0.8;h=0.1;loc=0;sca=1;
+z=randn(10000,1);
+x=g_and_h(z, g, h, loc, sca);
+histogram(x)
+%%
+diff=z-x;
+
+[zx, iter] = g_and_h_inverse(x, g, h);
+diff_z=zx-z;
+
+fz=normcdf(z);
+fx=g_and_h_cdf(z, g, h, loc, sca);
+diff_f=fz-fx;
+dgh=grad_g_and_h(z, g, h, loc, sca);
+
+pz=normpdf(z);
+px=g_and_h_pdf(x, g, h, loc, sca);
+diff_p=px-pz;
+
+invz=norminv(pz);
+invx=g_and_h_invcdf(px, g, h, loc, sca);
+diff_inv=invz-invx;
+
+
+%%
+% clc
+C=zeros(length(Ytrain),1);
+C(Ytrain==1)=1;
+C(Ytrain==0)=0;
+figure()
+scatter3(Xtrain(:,1),Xtrain(:,2),Ytrain,[],C,'filled')
+
+
+%%
+clc,clear all;
+load fisheriris
+X = meas;
+Y = species;
+
+Mdl = fitcknn(X,Y,'NumNeighbors',5,'Standardize',1)
+Xnew = [min(X);mean(X);max(X)];
+[label,score,cost] = predict(Mdl,Xnew)
+
+
 %%
 clc
 f=@(x) x.*exp(-x.^2/2);
@@ -38,15 +122,15 @@ warpfunc=@(c,x) indicator(c,x);
 N = 1000;
 x = linspace(-10,10,N)'; % Location of sensors
 % Simulate Warped Gaussian Process
-z=SimWGP(hyp,meanfunc,covfunc,warpfunc,x);
+v=SimWGP(hyp,meanfunc,covfunc,warpfunc,x);
 
 %% Partition the training and test set
 clc;
 indexTest=1:5:N;
 indexTrain=setdiff(1:N,indexTest);
 
-Yhat=z(indexTrain);
-Ytrue=z(indexTest);
+Yhat=v(indexTrain);
+Ytrue=v(indexTest);
 Xtrain=x(indexTrain,:);
 xstar=x(indexTest,:);
 
@@ -56,8 +140,8 @@ SBLUEprep=SBLUE_stats_prep(covfunc,meanfunc,hyp,Xtrain,xstar)
 %% Use different A1 and A2 for SBLUE
 clc;
 rho=[1,1];lambda=[1,1];
-A1=[rho(1),1-rho(1);1-lambda(1),lambda(1)];
-A2=[rho(2),1-rho(2);1-lambda(2),lambda(2)];
+A1 = [rho(1),1-rho(1);1-lambda(1),lambda(1)];
+A2 = [rho(2),1-rho(2);1-lambda(2),lambda(2)];
 xP=indexTrain(1:2:end);
 xI=setdiff(indexTrain,xP);
 liP=ismember(indexTrain,xP)';
@@ -201,14 +285,14 @@ mu = meanfunc( hyp.mean, x);
 ZI=SimIntData(hyp,C,mu,warpfunc,K,kw,snI,nI);
 
 %%
-z=ZI(1,:);t=linspace(-10,10,1000)';pd_hat=makedist('Normal','mu',0,'sigma',sqrt(1/3*T^3/(K^3)));
+v=ZI(1,:);t=linspace(-10,10,1000)';pd_hat=makedist('Normal','mu',0,'sigma',sqrt(1/3*T^3/(K^3)));
 y=pdf(pd_hat,t);
-zf=z(z~=Inf);
+zf=v(v~=Inf);
 var(zf)-1/3*T^3/(K^3)
 
 close all;
 figure();
-histogram(z,'Normalization','pdf')
+histogram(v,'Normalization','pdf')
 hold on;
 plot(t,y);
 title("Density plot vs histogram")
@@ -220,15 +304,15 @@ legend("Warpdist=N(0,1)")
 %%
 % C=feval(covfunc{:},hyp.cov,x)
 figure()
-plot(x,z)
+plot(x,v)
 
 %%
 x=linspace(0,100,10000)';
-z=SimWGP(hyp,meanfunc,covfunc,warpfunc,x)';
+v=SimWGP(hyp,meanfunc,covfunc,warpfunc,x)';
 y=pdf(pd,x);
 close all;
 figure();
-histogram(z,'Normalization','pdf')
+histogram(v,'Normalization','pdf')
 hold on;
 plot(x,y);
 title("Density plot vs histogram")
@@ -262,12 +346,12 @@ warpfunc=@(pd,p) invCdf(pd,p);
 T=10;
 hyp=struct('mean',0,'cov',hyp.cov,'dist',pd,'t',T);
 x=linspace(0,50,10000)';
-z=SimWGP(hyp,meanfunc,covfunc,warpfunc,x)';
+v=SimWGP(hyp,meanfunc,covfunc,warpfunc,x)';
 y=pdf(pd,x);
 %%
 close all;
 figure();
-histogram(z,'Normalization','probability')
+histogram(v,'Normalization','probability')
 hold on;
 plot(x,y);
 title("Density plot vs histogram")
