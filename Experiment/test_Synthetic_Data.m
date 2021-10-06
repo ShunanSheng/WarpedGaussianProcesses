@@ -3,9 +3,10 @@ clear all,close all,clc
 % Create the synthetic dataset
 % Setup for Spatial Random field
 meanfunc = @meanConst; 
-covfunc = {@covSEiso}; ell = 1/2; sf = 1; hyp.cov=log([ell; sf]); q=0.5;
-pd=makedist("Binomial",'N',1,'p',q); % Bernouli(p)
-hyp=struct('mean',0,'cov',hyp.cov,'dist',pd);
+covfunc = {@covSEiso}; ell = 1/2; sf = 1; hyp.cov=log([ell; sf]); 
+% q=0.5; pd=makedist("Binomial",'N',1,'p',q); % Bernouli(p)
+c=0;pd=[];
+hyp=struct('mean',0,'cov',hyp.cov,'dist',pd,'thres',c);
 
 
 %%% H0 Null hypothesis
@@ -47,10 +48,10 @@ H1=struct("meanfunc",meanfunc1,"covfunc",covfunc1,"hyp",hyp1);
 %%% warping function
 warpfunc=@(pd,p) invCdf(pd,p);
 warpinv=@(pd,p) invCdfWarp(pd,p);
-
+warpfunc_sf=@(c,x) indicator(c,x);
 
 %%% Generate synthetic data
-Data=SimSynData(SP,H0,H1,warpfunc,modelHyp);
+Data=SimSynData(SP,H0,H1,warpfunc_sf, warpfunc, modelHyp);
 
 %%
 clc;
@@ -156,7 +157,7 @@ display("NLRT  "+":TPR="+ntp+",FPR="+nfp+",MSE="+sum((YI-YI_hat).^2))
 clc;
 % Offline phase, super super slow
 tic
-SBLUEprep=SBLUE_stats_prep(covfunc,hyp.cov,Xtrain,Xtest,q); 
+SBLUEprep=SBLUE_stats_prep(covfunc,meanfunc,hyp,Xtrain,Xtest); 
 toc
 
 %%
@@ -168,7 +169,8 @@ rho=[1-wfp,1-nfp];lambda=[wtp,ntp];
 A1=[rho(1),1-rho(1);1-lambda(1),lambda(1)];
 A2=[rho(2),1-rho(2);1-lambda(2),lambda(2)];
 
-SBLUE=SBLUE_stats(SBLUEprep,A1,A2,liP,liI,q);
+transitionMat=SBLUE_confusion(A1,A2,liP,liI);
+SBLUE=SBLUE_stats(SBLUEprep,transitionMat,c);
 Ypred=SBLUE_pred(SBLUE,Ytrain_hat);
 [tp,fp]=confusionMat(Ytest,Ypred);
 display("SBLUE  "+":TPR="+tp+",FPR="+fp+",MSE="+sum((Ytest-Ypred).^2/length(Ytest)))

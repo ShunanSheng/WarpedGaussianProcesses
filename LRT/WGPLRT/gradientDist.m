@@ -5,6 +5,8 @@ function df=gradientDist(pd,v)
     % v : the point to take gradient
     % Output: 
     % df: the gradient of pd at v (n x 1)
+
+    
 %     if strcmp(pd.DistributionName,'g and h')
 %         df=grad_g_and_h(v, g, h, loc, sca)
 %     end

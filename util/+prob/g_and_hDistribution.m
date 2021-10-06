@@ -4,20 +4,22 @@ classdef g_and_hDistribution < prob.ToolboxFittableParametricDistribution
 % directory called '+prob' somewhere on your path, and save this file in
 % that directory using a name that matches your distribution name.
 %
-%    An object of the LaplaceDistribution class represents a Laplace
+%    An object of the LaplaceDistribution class represents a g_and_h
 %    probability distribution with a specific location parameter g and
 %    scale parameter h. This distribution object can be created directly
 %    using the MAKEDIST function or fit to data using the FITDIST function.
 %
-%    LaplaceDistribution methods:
-%       cdf                   - Cuglative distribution function
+%    note that only limited propeties of g_and_h are implemented, indicated
+%    as [done] , others are directly adopted from the Laplace distribution
+%    g_and_hDistribution methods:
+%       cdf                   - Cuglative distribution function [done]
 %       fit                   - Fit distribution to data
-%       icdf                  - Inverse cuglative distribution function
+%       icdf                  - Inverse cuglative distribution function [done]
 %       iqr                   - Interquartile range
 %       mean                  - Mean
 %       median                - Median
 %       paramci               - Confidence intervals for parameters
-%       pdf                   - Probability density function
+%       pdf                   - Probability density function [done]
 %       proflik               - Profile likelihood function
 %       random                - Random number generation
 %       std                   - Standard deviation

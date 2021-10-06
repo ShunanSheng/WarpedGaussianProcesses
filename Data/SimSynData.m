@@ -1,4 +1,4 @@
-function Data=SimSynData(SP,H0,H1,warpfunc,modelHyp)
+function Data=SimSynData(SP,H0,H1,warpfunc_sf, warpfunc, modelHyp)
     % Generate a test dataset 
     %
     % Input: 
@@ -6,6 +6,7 @@ function Data=SimSynData(SP,H0,H1,warpfunc,modelHyp)
     % H0,H1 : paramters for null/alternative hypotheses
     % modelHyp : parameters for sensor network (T,M,K,snI,snP)
     % warpfunc : warpfunc handle
+    % warpfunc_sp : warpfunc handle for the spatial field
     
     % Output: 
     % ZP : all point observations M x NP 
@@ -29,7 +30,7 @@ function Data=SimSynData(SP,H0,H1,warpfunc,modelHyp)
     x=[xSp,ySp];
     
     % Generate the lantent binary spatial field
-    y=SimWGP(hyp,meanfunc,covfunc,warpfunc,x);
+    y=SimWGP(hyp,meanfunc,covfunc,warpfunc_sf,x);
     
     % Total number of sensors
     N=length(y); 

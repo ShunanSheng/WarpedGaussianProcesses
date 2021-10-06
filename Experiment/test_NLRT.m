@@ -20,7 +20,7 @@ covfunc1 = {@covSEiso}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
 % pd1=makedist('Gamma','a',4,'b',2)
 % pd1=makedist('Beta','a',1,'b',1);
 % pd1=makedist('Normal','mu',1,'sigma',2);
-pd1=makedist('Normal','mu',2,'sigma',4);
+pd1=makedist('Normal','mu',2,'sigma',4)
 % pd1=makedist('Logistic','mu',10,'sigma',10)
 
 %%% Parameters for the sensor network

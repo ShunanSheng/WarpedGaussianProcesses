@@ -13,19 +13,19 @@ function LRT=WGPLRT_opt(H0,H1,warpinv,t,x0,snP)
 
     n=size(t,1); 
     
-    hyp0=H0.hyp;hyp1=H1.hyp;
-    lb0=hyp0.lb;ub0=hyp0.ub;
-    lb1=hyp1.lb;ub1=hyp1.ub;
+    hyp0 = H0.hyp;hyp1 = H1.hyp;
+    lb0 = hyp0.lb;ub0 = hyp0.ub;
+    lb1 = hyp1.lb;ub1 = hyp1.ub;
     
     pd0=hyp0.dist;pd1=hyp1.dist;
     covfunc0 = {H0.covfunc};
     covfunc1 = {H1.covfunc};
     
     % Evalaute K0,K1
-    K0=feval(covfunc0{:}, hyp0.cov, t);
-    K1=feval(covfunc1{:}, hyp1.cov, t);
-    Kchol0=chol(K0+1e-9*eye(n)); 
-    Kichol0=Kchol0\eye(n); 
+    K0 = feval(covfunc0{:}, hyp0.cov, t);
+    K1 = feval(covfunc1{:}, hyp1.cov, t);
+    Kchol0 = chol(K0+1e-9*eye(n)); 
+    Kichol0 = Kchol0\eye(n); 
     
     % better efficiency
     Klogdet0=2*sum(log(diag(Kchol0)));
@@ -44,8 +44,8 @@ function LRT=WGPLRT_opt(H0,H1,warpinv,t,x0,snP)
     x00=x0(:,1);
     x01=x0(:,2);
     
-    [Qval0,vhat0,A0]=LaplaceApproximation(pd0,Kinv0,warpinv,x00,lb0,ub0);
-    [Qval1,vhat1,A1]=LaplaceApproximation(pd1,Kinv1,warpinv,x01,lb1,ub1);
+    [Qval0,vhat0,A0] = LaplaceApproximation(pd0,Kinv0,warpinv,x00,lb0,ub0);
+    [Qval1,vhat1,A1] = LaplaceApproximation(pd1,Kinv1,warpinv,x01,lb1,ub1);
     
     % place all data-independent computation here for better efficiency
     % Compute the test statistic constants

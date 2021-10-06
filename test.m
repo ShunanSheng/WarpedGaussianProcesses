@@ -4,16 +4,16 @@ x=[1,2]';
 % pd1=makedist("Normal","mu",0,"sigma",1)
 cdf(pd1,x)
 
-g=1;h=1;loc=10;sca=2;
+g=1;h=1;loc=10;sca=1;
 [v, iter] = g_and_h_inverse(x, g, h)
 [p, iter] = g_and_h_cdf(x, g, h, loc, sca)
 
-pd=makedist("g_and_h","g",1,"h",1,'loc',loc,'sca',sca)
+pd=makedist("g_and_h","g",-0.5,"h",1,'loc',loc,'sca',sca)
 cdf(pd,x)
 cdf(pd,icdf(pd,[0.1,0.2]'))
 pdf(pd,x)
 
-gradientDist(pd,x)
+% gradientDist(pd,x)
 
 
 %%
@@ -38,7 +38,7 @@ dgh=grad_g_and_h(v, g, h, loc, sca)-df
 
 %% when h=g=0, the g_and_h transformation is effectively the identity
 clc;clear
-g=0.8;h=0.1;loc=0;sca=1;
+g=0.5;h=0.1;loc=10;sca=1;
 z=randn(10000,1);
 x=g_and_h(z, g, h, loc, sca);
 histogram(x)
