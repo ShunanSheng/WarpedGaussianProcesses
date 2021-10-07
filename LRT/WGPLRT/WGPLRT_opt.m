@@ -54,10 +54,10 @@ function LRT=WGPLRT_opt(H0,H1,warpinv,t,x0,snP)
     [A1_eigvec, A1_eigval] = eig(A1);
     
     if min(diag(A0_eigval))<0
-        warning("A0 not p.s.d.")
+        warning("A0 is not p.s.d.")
     end
     if min(diag(A1_eigval))<0
-        warning("A1 not p.s.d.")
+        warning("A1 is not p.s.d.")
     end
     
     

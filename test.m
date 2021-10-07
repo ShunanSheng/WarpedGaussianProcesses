@@ -1,8 +1,18 @@
+f=@(x) x.*exp(-x.^2./2);
+c=1;
+integral(f,c,Inf)
+exp(-c^2/2)
+
+
+
+
+%%
 clc;clear
 pd1=makedist("Laplace","mu",0,"sigma",1)
-x=[1,2]';
+x=[-1,0,1,2]';
 % pd1=makedist("Normal","mu",0,"sigma",1)
 cdf(pd1,x)
+df=gradientDist(pd1,x)
 
 g=1;h=1;loc=10;sca=1;
 [v, iter] = g_and_h_inverse(x, g, h)
@@ -13,12 +23,14 @@ cdf(pd,x)
 cdf(pd,icdf(pd,[0.1,0.2]'))
 pdf(pd,x)
 
+df=gradientDist(pd,x)
 % gradientDist(pd,x)
 
 
 %%
 pd=makedist("Normal")
 pd=makedist("Laplace")
+
 %%
 
 p=g_and_h_pdf(x, g, h, loc, sca)
@@ -38,10 +50,22 @@ dgh=grad_g_and_h(v, g, h, loc, sca)-df
 
 %% when h=g=0, the g_and_h transformation is effectively the identity
 clc;clear
-g=0.5;h=0.1;loc=10;sca=1;
+
 z=randn(10000,1);
+g=0;h=1;loc=0;sca=1;
 x=g_and_h(z, g, h, loc, sca);
+
+g=0;h=0;loc=0;sca=1;
+y=g_and_h(z, g, h, loc, sca);
+disp(min(x))
+disp(min(y))
+figure()
+histogram(z)
+figure()
 histogram(x)
+hold on
+histogram(y)
+
 %%
 diff=z-x;
 

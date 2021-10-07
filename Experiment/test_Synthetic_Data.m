@@ -12,9 +12,10 @@ hyp=struct('mean',0,'cov',hyp.cov,'dist',pd,'thres',c);
 %%% H0 Null hypothesis
 meanfunc0 = @meanConst; 
 covfunc0 = {@covSEiso}; ell0 =1/2; sf0 = 1; hyp0.cov=log([ell0; sf0]);
-pd0=makedist('Normal','mu',2,'sigma',4)
+% pd0=makedist('Normal','mu',2,'sigma',4)
 % pd0=makedist('Normal','mu',0,'sigma',1);
 % pd0=makedist('Gamma','a',2,'b',4);
+pd0 = makedist("g_and_h","g",0.1,"h",0.1,'loc',0,'sca',1)
 
 %%% H1 Alternative hypothesis
 
@@ -24,7 +25,9 @@ covfunc1 = {@covSEiso}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
 % pd1=makedist('Gamma','a',1,'b',1)
 % pd1=makedist('Beta','a',1,'b',1)
 % pd1=makedist('Normal','mu',0,'sigma',1)
-pd1=makedist('Logistic','mu',2,'sigma',5)
+% pd1=makedist('Logistic','mu',2,'sigma',5)
+pd1 = makedist("g_and_h","g",0.2,"h",0.1,'loc',0,'sca',1)
+
 
 %%% Parameters for the sensor network
 T=10; M=20; K=20; snP=0.1; snI=0.1;
@@ -79,7 +82,7 @@ x_init=[ones(M,1)*0.5, ones(M,1)*0.5];
 LRT=WGPLRT_opt(H0,H1,warpinv,t,x_init, snP);
 
 % find the logGamma at significance level alpha
-alpha=0.05;
+alpha=0.1;
 logGammaP=WGPLRT_opt_gamma(LRT,hyp0,CP0,muP0,warpfunc,t,snP,alpha);
 
 % LRT for ZP0 and ZP1
@@ -152,17 +155,21 @@ YI=[y(xI0);y(xI1)];
 
 display("NLRT  "+":TPR="+ntp+",FPR="+nfp+",MSE="+sum((YI-YI_hat).^2))
 
+%% KNN 
+tic;
+Mdl = fitcknn(Xtrain,Ytrain_hat,'NumNeighbors',5,'Standardize',1);
+[Ypred,score,cost] = predict(Mdl,Xtest);
+MSE_KNN=sum((Ypred-Ytest).^2)/length(Ypred);
+t_KNN=toc;
 
 %% SBLUE
 clc;
 % Offline phase, super super slow
-tic
 SBLUEprep=SBLUE_stats_prep(covfunc,meanfunc,hyp,Xtrain,Xtest); 
-toc
 
 %%
 % Online phase: given the knowlegde of the LRT performance
-
+tic
 liP=ismember(indexTrain,[xP0;xP1]);
 liI=ismember(indexTrain,[xI0;xI1]);
 rho=[1-wfp,1-nfp];lambda=[wtp,ntp];
@@ -173,6 +180,11 @@ transitionMat=SBLUE_confusion(A1,A2,liP,liI);
 SBLUE=SBLUE_stats(SBLUEprep,transitionMat,c);
 Ypred=SBLUE_pred(SBLUE,Ytrain_hat);
 [tp,fp]=confusionMat(Ytest,Ypred);
-display("SBLUE  "+":TPR="+tp+",FPR="+fp+",MSE="+sum((Ytest-Ypred).^2/length(Ytest)))
+MSE_SBLUE=sum((Ytest-Ypred).^2)/length(Ypred);
+t_SBLUE=toc;
+
+
+fprintf('SBLUE w noise has MSE= %4.3f,with time= %4.3f\n',MSE_SBLUE,t_SBLUE);
+fprintf('KNN w noise has MSE= %4.3f,with time= %4.3f\n',MSE_KNN,t_KNN);
 
 

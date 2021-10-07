@@ -8,7 +8,7 @@ clear all,clc
 %%% Initialize Temporal processes
 %%% H0 Null hypothesis
 meanfunc0 = @meanConst; 
-covfunc0 = {@covSEiso}; ell0 =1/8; sf0 = 1; hyp0.cov=log([ell0; sf0]);
+covfunc0 = {@covSEiso}; ell0 =1/2; sf0 = 1; hyp0.cov=log([ell0; sf0]);
 % covfunc0={@covFBM};sf0=1;h0=1/2;hyp0.cov=[log(sf0);-log(1/h0-1)];
 
 % pd0=makedist('Normal','mu',5,'sigma',1)
@@ -17,7 +17,7 @@ covfunc0 = {@covSEiso}; ell0 =1/8; sf0 = 1; hyp0.cov=log([ell0; sf0]);
 % pd0=makedist('Beta','a',4,'b',6)
 % pd0 = makedist('Stable','alpha',0.5,'beta',0.8,'gam',1,'delta',0)
 % pd0 = makedist('tLocationScale','mu',-1,'sigma',4,'nu',3);
-pd0 = makedist("g_and_h","g",0.1,"h",0.1,'loc',0,'sca',1)
+pd0 = makedist("g_and_h","g",-0.1,"h",0.1,'loc',0,'sca',1)
 
 
 %%% H1 Alternative hypothesis
@@ -31,7 +31,7 @@ covfunc1 = {@covSEiso}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
 % pd1=makedist('Normal','mu',2,'sigma',4)
 % pd1=makedist('Normal','mu',1,'sigma',1)
 % pd1=makedist('tLocationScale','mu',2,'sigma',4,'nu',3)
-pd1 = makedist("g_and_h","g",0.2,"h",0.1,'loc',0,'sca',1)
+pd1 = makedist("g_and_h","g",0,"h",0,'loc',0,'sca',1)
 
 
 %%% Parameters for the sensor network
@@ -42,6 +42,7 @@ T=10; M=50; snP=0.1;
 %%% Lower/upper bound for optimization in Laplace Approximation,i.e. the range of W
 warpdist0="Normal";warpdist1="Normal";
 % warpdist0="Gamma";warpdist1="Gamma";
+% warpdist0="Normal";warpdist1="Gamma";
 
 [lb0,ub0]=lowUpBound(warpdist0,M);
 [lb1,ub1]=lowUpBound(warpdist1,M);
