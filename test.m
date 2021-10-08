@@ -1,3 +1,18 @@
+clc
+g=0.01;h=0;loc=0;sca=1;
+pd=makedist("g_and_h","g",g,"h",h,'loc',0,'sca',1);
+z=randn(10,1);
+x=g_and_h(z, g, h, loc, sca);
+grad_g_and_h(z, g, h, loc, sca);
+
+p=g_and_h_pdf(x, g, h, loc, sca);
+normpdf(z);
+df_normal =1/sqrt(2*pi)*exp(-x.^2./2).*(-x)
+gradientDist(pd,x)
+
+
+
+%%
 f=@(x) x.*exp(-x.^2./2);
 c=1;
 integral(f,c,Inf)
@@ -14,16 +29,18 @@ x=[-1,0,1,2]';
 cdf(pd1,x)
 df=gradientDist(pd1,x)
 
-g=1;h=1;loc=10;sca=1;
+g=1;h=1;loc=0;sca=1;
 [v, iter] = g_and_h_inverse(x, g, h)
 [p, iter] = g_and_h_cdf(x, g, h, loc, sca)
 
-pd=makedist("g_and_h","g",-0.5,"h",1,'loc',loc,'sca',sca)
+pd=makedist("g_and_h","g",0,"h",0,'loc',loc,'sca',sca)
 cdf(pd,x)
 cdf(pd,icdf(pd,[0.1,0.2]'))
 pdf(pd,x)
 
 df=gradientDist(pd,x)
+
+df_normal =1/sqrt(2*pi)*exp(-x.^2./2).*(-x)
 % gradientDist(pd,x)
 
 

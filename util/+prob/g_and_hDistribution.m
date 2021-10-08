@@ -132,13 +132,27 @@ classdef g_and_hDistribution < prob.ToolboxFittableParametricDistribution
         % Implement methods to compute the mean, variance, and standard
         % deviation.
         function m = mean(this)
-            m = this.g;
+            if this.g==0 && this.h<1
+                m=this.loc;
+            elseif this.g~=0 && this.h<1
+                v=1/this.g/sqrt(1-this.h)*(exp(this.g^2/(1-this.h)/2)-1);
+                m=this.loc+this.sca*v;
+            else
+                m=NaN;
+            end
         end
         function s = std(this)
-            s = sqrt(2)*this.h;
+            s = sqrt(this.var);
         end
         function v = var(this)
-            v = 2*this.h^2;
+            if this.h<1/2
+                e2 = (1-2*exp(this.g^2/(2-4*this.h))+...
+                    exp(2*this.g^2/(1-2*this.h)))/this.g^2/sqrt(1-2*this.h);
+                v = this.sca^2*e2+2*this.sca*this.loc*this.mean+this.loc^2-...
+                this.mean^2;
+            else
+                v=NaN;
+            end
         end
     end
     methods

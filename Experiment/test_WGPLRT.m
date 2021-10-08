@@ -3,7 +3,7 @@
 %%% them is of restricted suppport, the Laplace approximation may fail if
 %%% the density is not concentrated away the boundaries of the support
 
-clear all,clc
+clear all,clc,close all;
 
 %%% Initialize Temporal processes
 %%% H0 Null hypothesis
@@ -11,13 +11,13 @@ meanfunc0 = @meanConst;
 covfunc0 = {@covSEiso}; ell0 =1/2; sf0 = 1; hyp0.cov=log([ell0; sf0]);
 % covfunc0={@covFBM};sf0=1;h0=1/2;hyp0.cov=[log(sf0);-log(1/h0-1)];
 
-% pd0=makedist('Normal','mu',5,'sigma',1)
+% pd0=makedist('Normal','mu',0,'sigma',1)
 % pd0=makedist('Gamma','a',10,'b',1/2)
 % pd0=makedist('Logistic','mu',8,'sigma',2)
 % pd0=makedist('Beta','a',4,'b',6)
 % pd0 = makedist('Stable','alpha',0.5,'beta',0.8,'gam',1,'delta',0)
-% pd0 = makedist('tLocationScale','mu',-1,'sigma',4,'nu',3);
-pd0 = makedist("g_and_h","g",-0.1,"h",0.1,'loc',0,'sca',1)
+% pd0 = makedist('tLocationScale','mu',2,'sigma',5,'nu',3) % nv should be bigger than 2
+pd0 = makedist("g_and_h","g",0.2,"h",0.1,'loc',0,'sca',1)
 
 
 %%% H1 Alternative hypothesis
@@ -27,11 +27,11 @@ covfunc1 = {@covSEiso}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
 
 % pd1=makedist('Gamma','a',20,'b',1/2)
 % pd1=makedist('Beta','a',6,'b',4)
-% pd1=makedist('Logistic','mu',2,'sigma',4)
-% pd1=makedist('Normal','mu',2,'sigma',4)
+% pd1=makedist('Logistic','mu',8,'sigma',4)
+% pd1=makedist('Normal','mu',0,'sigma',1)
 % pd1=makedist('Normal','mu',1,'sigma',1)
-% pd1=makedist('tLocationScale','mu',2,'sigma',4,'nu',3)
-pd1 = makedist("g_and_h","g",0,"h",0,'loc',0,'sca',1)
+% pd1=makedist('tLocationScale','mu',2,'sigmathi',5,'nu',10)
+pd1 = makedist("g_and_h","g",0.2,"h",0.5,'loc',0,'sca',1)
 
 
 %%% Parameters for the sensor network
@@ -79,7 +79,8 @@ C1 = chol(feval(covfunc1{:}, hyp1.cov, t)+1e-9*eye(M));
 mu1 = meanfunc1( hyp1.mean, t);
 
 % run Laplace approximation
-x_init=[ones(M,1)*0.5, ones(M,1)*0.5]; 
+
+x_init=[ones(M,1)*pd0.mean, ones(M,1)*pd1.mean]; 
 LRT=WGPLRT_opt(H0,H1,warpinv,t,x_init, snP);
 
 % generate samples
