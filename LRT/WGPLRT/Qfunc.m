@@ -5,5 +5,9 @@ function Qx=Qfunc(G,Kinv,pd,x)
         B= sum(log(gradientG(pd,G,x)));
         warning("NaN Objective")
     end
+    dQ=gradientQ(pd,Kinv,G,x);
+    if max(abs(dQ))>1000
+        warning("gradient dQ too large")
+    end
 
 end

@@ -1,8 +1,105 @@
-clc
-g=0.01;h=0;loc=0;sca=1;
-pd=makedist("g_and_h","g",g,"h",h,'loc',0,'sca',1);
-z=randn(10,1);
+clc,clear
+g=0;h=0;loc=2;sca=3;tol=1e-8;
+pd=makedist("g_and_h","g",g,"h",h,'loc',loc,'sca',sca);
+z=randn(1000,1);
 x=g_and_h(z, g, h, loc, sca);
+
+
+[p, ~] = g_and_h_cdf(x, g, h, loc, sca, tol);
+normcdf(z);
+
+pdf_gh = g_and_h_pdf(x, g, h, loc, sca, tol);
+pnorm = normpdf(z);
+
+P=@(x) g_and_h_pdf(x, g, h, loc, sca, tol);
+integral(P,-Inf,Inf)
+
+
+%%
+range(pdf_gh./pnorm)
+
+figure()
+histogram(x,'Normalization','probability')
+hold on
+histogram(z,'Normalization','probability')
+legend("x","z")
+%%
+clc, clear
+% pd=makedist('Normal','mu',2,'sigma',4);
+pd=makedist('tLocationScale','mu',-1,'sigma',1,'nu',3)
+meanfunc = @meanConst; 
+covfunc = {@covSEiso}; ell0 =1/2; sf0 = 1; hyp.cov=log([ell0; sf0]);
+warpfunc=@(pd,p) invCdf(pd,p);
+warpinv=@(pd,p) invCdfWarp(pd,p);
+
+n=5;
+v=linspace(0,1,n)';
+
+K0=feval(covfunc{:}, hyp.cov, v);
+Kchol0=chol(K0); 
+Kichol0=Kchol0\eye(n); 
+Klogdet0=2*trace(log(Kchol0));
+Kinv=Kichol0*Kichol0';
+
+
+G=@(x) warpinv(pd,x);
+Q=@(x) -1/2*G(x)'*Kinv*G(x)+sum(log(gradientG(pd,G,x)));
+
+
+%%
+% test for dG, d2G, dQ, d2Q
+clc
+Gv=G(v);
+dG=gradientG(pd,G,v);
+d2G=hessianG(pd,G,v);
+
+dGhat=gradientVecEmpirical(G,v);
+diffdG = diag(dGhat)-dG;
+
+L=@(x) gradientG(pd,G,x);
+d2Ghat=gradientVecEmpirical(L,v);
+diffd2G = d2Ghat-diag(d2G);
+
+
+
+
+Qv=Q(v);
+dQ=gradientQ(pd,Kinv,G,v);
+dQhat = gradientEmpirical(Q,v);
+diffdQ = dQhat-dQ
+
+d2Q=hessianQ(pd,Kinv,G,v);
+
+F=@(x) gradientQ(pd,Kinv,G,x);
+d2Qhat=gradientVecEmpirical(F,v);
+
+diffd2Q = d2Qhat-d2Q
+
+
+%% test gradient of g_and_h
+dgh=gradientG_and_h(x, g, h, loc, sca, tol);
+df=gradientDist(pd,x);
+dgh-df
+
+%% pdf is correct
+clc
+delta=0.001;
+[ph,~] = g_and_h_cdf(x+delta,g, h, loc, sca, tol);
+[p, ~] = g_and_h_cdf(x, g, h, loc, sca, tol);
+pg_and_h= (ph-p)./delta
+pfunc=g_and_h_pdf(x, g, h, loc, sca, tol);
+pfunc-pg_and_h
+
+pfunc=g_and_h_pdf([x,x+delta], g, h, loc, sca, tol)
+
+
+v=g_and_h_cdf([x,x+delta], g, h, loc, sca, tol);
+[p,ph]-v;
+
+
+
+%%
+
 grad_g_and_h(z, g, h, loc, sca);
 
 p=g_and_h_pdf(x, g, h, loc, sca);
@@ -51,7 +148,6 @@ pd=makedist("Laplace")
 %%
 
 p=g_and_h_pdf(x, g, h, loc, sca)
-
 v=linspace(0,5,10)';
 delta=0.00000001;
 V=[v,v+delta];
@@ -69,19 +165,20 @@ dgh=grad_g_and_h(v, g, h, loc, sca)-df
 clc;clear
 
 z=randn(10000,1);
-g=0;h=1;loc=0;sca=1;
-x=g_and_h(z, g, h, loc, sca);
+loc=0;sca=1;
+pd0=makedist("g_and_h","g",0.1,"h",0.2,'loc',loc,'sca',sca);
+x=g_and_h(z, pd0.g, pd0.h, loc, sca);
 
-g=0;h=0;loc=0;sca=1;
-y=g_and_h(z, g, h, loc, sca);
+pd1=makedist("g_and_h","g",0.1,"h",0.2,'loc',2,'sca',sca);
+y=g_and_h(z, pd1.g, pd1.h, loc, sca);
 disp(min(x))
 disp(min(y))
 figure()
-histogram(z)
-figure()
-histogram(x)
-hold on
-histogram(y)
+histogram(y,'Normalization','probability')
+hold on 
+histogram(x,'Normalization','probability')
+
+
 
 %%
 diff=z-x;
@@ -398,42 +495,6 @@ plot(x,y);
 title("Density plot vs histogram")
 legend("Warpdist=Gamma(2,4)")
 
-%%
-n=10;
-v=linspace(0,1,n)';
-
-
-K0=feval(covfunc{:}, hyp.cov, v);
-Kchol0=chol(K0+1e-9*eye(n)); 
-Kichol0=Kchol0\eye(n); 
-Klogdet0=2*trace(log(Kchol0));
-Kinv=Kichol0*Kichol0';
-
-
-G=@(x) warpinv(pd,x);
-Q=@(x) -1/2*G(x)'*Kinv*G(x)+sum(log(gradientG(pd,G,x)));
-
-
-%%
-% test for dG, d2G, dQ, d2Q
-Gv=G(v)
-dG=gradientG(pd,G,v)
-d2G=hessianG(pd,G,v)
-dGhat=gradientEmpirical(G,v)
-diffdG=diag(dGhat)-dG
-
-Qv=Q(v)
-dQ=gradientQ(pd,Kinv,G,v)
-dQhat=gradientEmpirical(Q,v)'
-diffdQ=dQhat-dQ
-
-d2Q=hessianQ(pd,Kinv,G,v)
-
-F=@(x) gradientQ(pd,Kinv,G,x);
-d2Qhat=gradientEmpirical(F,v)
-
-diffd2Q=d2Qhat-d2Q
-
 
 %% Verify the LA
 % Let v be a 1x1 vector
@@ -454,16 +515,40 @@ plot(lv,lQv)
 
 %%
 
+clc
+F=@(x) x'*x;
+dF=@(x) 2.*x;
+v=[1,2]';
+dFempi=gradientEmpirical(F,v);
+d2Fempi=gradientVecEmpirical(dF,v);
+
+
+
 function dF=gradientEmpirical(F,v)
     n=size(v,1);
     o=zeros(n,1);
     h=0.0001;
-    dF=[];
+    dF=zeros(n,1);
     for i=1:n
        delta=o;
        delta(i)=h;
        vhat=v+delta;
-       dF=[dF,(F(vhat)-F(v))/h];
+       dF(i)=(F(vhat)-F(v))/h;
+    end
+end
+
+function dF=gradientVecEmpirical(F,v)
+    n=size(v,1);
+    o=zeros(n,1);
+    Fv=F(v);
+    m=length(Fv);
+    h=0.0001;
+    dF=zeros(m,n);
+    for i=1:n
+        delta=o;
+        delta(i)=h;
+        vhat=v+delta;
+        dF(:,i)=(F(vhat)-F(v))./h;
     end
 end
 

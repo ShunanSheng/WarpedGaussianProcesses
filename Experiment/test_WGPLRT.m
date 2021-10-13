@@ -12,12 +12,14 @@ covfunc0 = {@covSEiso}; ell0 =1/2; sf0 = 1; hyp0.cov=log([ell0; sf0]);
 % covfunc0={@covFBM};sf0=1;h0=1/2;hyp0.cov=[log(sf0);-log(1/h0-1)];
 
 % pd0=makedist('Normal','mu',0,'sigma',1)
+% pd0=makedist('Normal','mu',2,'sigma',4)
 % pd0=makedist('Gamma','a',10,'b',1/2)
 % pd0=makedist('Logistic','mu',8,'sigma',2)
 % pd0=makedist('Beta','a',4,'b',6)
 % pd0 = makedist('Stable','alpha',0.5,'beta',0.8,'gam',1,'delta',0)
 % pd0 = makedist('tLocationScale','mu',2,'sigma',5,'nu',3) % nv should be bigger than 2
-pd0 = makedist("g_and_h","g",0.2,"h",0.1,'loc',0,'sca',1)
+% pd0 = makedist("g_and_h","g",0.5,"h",0,'loc',0,'sca',1)
+pd0 = makedist("g_and_h","g",0,"h",0.2,'loc',1,'sca',1)
 
 
 %%% H1 Alternative hypothesis
@@ -28,14 +30,14 @@ covfunc1 = {@covSEiso}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
 % pd1=makedist('Gamma','a',20,'b',1/2)
 % pd1=makedist('Beta','a',6,'b',4)
 % pd1=makedist('Logistic','mu',8,'sigma',4)
-% pd1=makedist('Normal','mu',0,'sigma',1)
+% pd1=makedist('Normal','mu',0.3,'sigma',1)
 % pd1=makedist('Normal','mu',1,'sigma',1)
 % pd1=makedist('tLocationScale','mu',2,'sigmathi',5,'nu',10)
-pd1 = makedist("g_and_h","g",0.2,"h",0.5,'loc',0,'sca',1)
+pd1 = makedist("g_and_h","g",0.5,"h",0.2,'loc',1,'sca',1)
 
 
 %%% Parameters for the sensor network
-T=10; M=50; snP=0.1; 
+T=20; M=50; snP=0.1; 
 % each point observation zP is of size Mx1 with noise ~ N(0,snP^2I)
 
 
@@ -87,7 +89,7 @@ LRT=WGPLRT_opt(H0,H1,warpinv,t,x_init, snP);
 ZP=SimFastPtData(hyp0,hyp1,C0,C1,mu0,mu1,warpfunc,t,snP,n0,n1);
 
 %% Plot ROC
-N=1000;LogGamma=linspace(-1000, 1000,N)';
+N=1000;LogGamma=linspace(-500, 500,N)';
 TP=zeros(N,1);FP=zeros(N,1);
 
 

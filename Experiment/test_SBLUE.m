@@ -23,7 +23,7 @@ warpfunc=@(c,x) indicator(c,x);
 
 %% 2D data
 % % Location of sensors 
-n = 50; xinf=-10; xsup=10; N=n.^2;
+n = 30; xinf=-10; xsup=10; N=n.^2;
 [X,Y]= meshgrid(linspace(xinf,xsup,n),linspace(xinf,xsup,n));
 xSp=reshape(X,[],1);
 ySp=reshape(Y,[],1); 

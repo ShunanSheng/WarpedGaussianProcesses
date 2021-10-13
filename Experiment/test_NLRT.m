@@ -9,8 +9,10 @@ covfunc0 = {@covSEiso}; ell0 =1/4; sf0 = 1; hyp0.cov=log([ell0; sf0]);
 % covfunc0={@covFBM};sf0=1;h0=1/2;hyp0.cov=[log(sf0);-log(1/h0-1)];
 % pd0=makedist('Normal','mu',10,'sigma',1)
 % pd0=makedist('Normal','mu',0,'sigma',1)
-pd0=makedist('Normal','mu',2,'sigma',4)
+% pd0=makedist('Normal','mu',2,'sigma',4)
 % pd0=makedist('Gamma','a',2,'b',4)
+pd0 = makedist("g_and_h","g",0.01,"h",0.01,'loc',0,'sca',1)
+
 
 %%% H1 Alternative hypothesis
 
@@ -20,8 +22,10 @@ covfunc1 = {@covSEiso}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
 % pd1=makedist('Gamma','a',4,'b',2)
 % pd1=makedist('Beta','a',1,'b',1);
 % pd1=makedist('Normal','mu',1,'sigma',2);
-pd1=makedist('Normal','mu',2,'sigma',4)
+% pd1=makedist('Normal','mu',2,'sigma',4)
 % pd1=makedist('Logistic','mu',10,'sigma',10)
+pd1 = makedist("g_and_h","g",0.01,"h",0.4,'loc',0,'sca',1)
+
 
 %%% Parameters for the sensor network
 T=10; K=100; snI=0.1; 
@@ -66,8 +70,8 @@ ZI=SimFastIntData(hyp0,hyp1,C0,C1,mu0,mu1,warpfunc,K,kw,snI,n0,n1);
 
 %% NLRT ROC curve constants
 clc;
-sumstats=@summaryMoment; % the summary statistic
-% sumstats=@summaryAutoMoment;
+% sumstats=@summaryMoment; % the summary statistic
+sumstats=@summaryAutoMoment;
 
 d=@distEuclid; % distance metric
 J=10000; % number of samples per hypothesis
