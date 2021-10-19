@@ -1,14 +1,16 @@
-function Cov_g=covgY(A,Cov_xstar,c)
+function Cov_g=covgY(p,Cov_xstar,chat)
     % Calculate Cov(gsatr,Yhat)
     %
     % Input : 
-    % A : transition matrix
+    % p : the modified confusion probability
     % Cov_xstar : C(xstar,xtrain)
-    % c : invNormCdf(1-q)
+    % chat : the normalzied threshold
     %
     % Output:
     % Cov_g : Cov(gsatr,Yhat)
     
-    p11=A(4);p01=A(3);
-    Cov_g=(p11-p01).*Cov_xstar.*exp(-c^2/2)./sqrt(2*pi);
+    nstar=size(Cov_xstar,1);
+    P=repmat((p.p11-p.p01)',[nstar,1]);
+    C=repmat((chat.^2)',[nstar,1]);
+    Cov_g=P.*Cov_xstar.*exp(-C./2)./sqrt(2*pi);
 end

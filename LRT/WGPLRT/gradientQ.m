@@ -11,14 +11,15 @@ function dQ=gradientQ(pd,Kinv,G,v)
     % Output: 
     % dQ : gradient of Q at v (n x 1)
     
-    h=@(x) pdf(pd,x);dh=@(x) gradientDist(pd,x);
-    phi=@normpdf;dphi=@gradientNorm;
-    w=G(v);dG=gradientG(pd,G,v);
+    h=@(x) pdf(pd,x);dh = @(x) gradientDist(pd,x);
+    phi=@normpdf;dphi = @gradientNorm;
+    w=G(v);dG = gradientG(pd,G,v);
     
-    A=-Kinv*w.*dG;
-    numer=dh(v).*phi(w).^2-dphi(w).*h(v).^2;
-    denom=phi(w).^2.*h(v);
-    B=numer./denom;
+
+    A = -Kinv*w.*dG;
+    numer = dh(v).*phi(w).^2-dphi(w).*h(v).^2;
+    denom = phi(w).^2.*h(v);
+    B = numer./denom; 
     
     dQ=A+B;
 end

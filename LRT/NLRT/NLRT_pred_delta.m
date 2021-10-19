@@ -23,7 +23,9 @@ function Lambda=NLRT_pred_delta(D0,D1,delta)
     N0=horzcat(n0{:});
     N1=horzcat(n1{:});
     
-    Lambda=(N0./N1)'; % the test statistic
+    epsilon=0.1; % To avoid ill-division
+    
+    Lambda=((N0+epsilon)./(N1+epsilon))'; % the test statistic
     Lambda(isnan(Lambda))=0;
 
 end

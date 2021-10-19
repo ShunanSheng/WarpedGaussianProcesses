@@ -5,23 +5,33 @@ clear all,close all,clc
 %%% Setup for Temporal processes
 %%% H0 Null hypothesis
 meanfunc0 = @meanConst; 
-covfunc0 = {@covSEiso}; ell0 =1/2; sf0 = 1; hyp0.cov=log([ell0; sf0]);
+% covfunc0 = {@covSEiso}; ell0 =1/4; sf0 = 1; hyp0.cov=log([ell0; sf0]);
+covfunc0 = {@covMaterniso, 1}; ell1=1; sf1=1; hyp0.cov=log([ell1; sf1]);
+% covfunc0={@covFBM};sf0=1;h0=1/2;hyp0.cov=[log(sf0);-log(1/h0-1)];
 % pd0=makedist('Normal','mu',10,'sigma',1)
-% pd0=makedist('Normal','mu',0,'sigma',1);
-pd0=makedist('Gamma','a',2,'b',4);
+% pd0=makedist('Normal','mu',0,'sigma',1)
+% pd0=makedist('Normal','mu',2,'sigma',4)
+% pd0=makedist('Gamma','a',2,'b',4)
+% pd0 = makedist("g_and_h","g",0.01,"h",0.01,'loc',0,'sca',1)
+pd0 = makedist("g_and_h","g",0.1,"h",0.4,'loc',1,'sca',1)
 
 %%% H1 Alternative hypothesis
 
 meanfunc1 = @meanConst; 
-covfunc1 = {@covSEiso}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
+% covfunc1 = {@covSEiso}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
+covfunc1 = {@covMaterniso, 5}; ell1=1; sf1=1; hyp1.cov=log([ell1; sf1]);
 % covfunc1 = {@covMaterniso, 3}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
-pd1=makedist('Gamma','a',1,'b',1);
+% pd1=makedist('Gamma','a',4,'b',2)
 % pd1=makedist('Beta','a',1,'b',1);
-% pd1=makedist('Normal','mu',-2,'sigma',1);
+% pd1=makedist('Normal','mu',1,'sigma',2);
+% pd1=makedist('Normal','mu',2,'sigma',4)
 % pd1=makedist('Logistic','mu',10,'sigma',10)
+% pd1 = makedist("g_and_h","g",0.01,"h",0.,'loc',0,'sca',1)
+pd1 = makedist("g_and_h","g",0.1,"h",0.4,'loc',1,'sca',1)
+
 
 %%% Parameters for the sensor network
-T=10; K=100; snI=0.1; 
+T=20; K=50; snI=0.1; 
 
 
 
@@ -43,6 +53,7 @@ warpfunc=@(pd,p) invCdf(pd,p);
 warpinv=@(pd,p) invCdfWarp(pd,p);
 
 %% NLRT
+tic
 clc;
 nI=10000;n0=nI*0.5;n1=nI-n0;
 yn=[zeros(n0,1);ones(n1,1)]; % ground truth, the value of latent field, 
@@ -62,7 +73,10 @@ ZI=SimFastIntData(hyp0,hyp1,C0,C1,mu0,mu1,warpfunc,K,kw,snI,n0,n1);
 
 %% NLRT ROC curve constants
 clc;
-sumstats=@summaryMoment; % the summary statistic
+% sumstats=@summaryMoment; % the summary statistic
+% sumstats=@summaryAutoMoment;
+sumstats=@(z) summaryAuto(z,4);
+
 d=@distEuclid; % distance metric
 J=10000; % number of samples per hypothesis
 
@@ -71,7 +85,7 @@ J=10000; % number of samples per hypothesis
 
 %% Plot ROC
 clc;
-N=1000;M=5;LogGamma=linspace(-100,100,N);Delta=linspace(0.5,5,M);% distance tolerance
+N=1000;M=20;LogGamma=linspace(-100,100,N);Delta=linspace(0,1,M);% distance tolerance
 TP=zeros(N,M);FP=zeros(N,M);
 [D0,D1]=NLRT_stats(ZI,ZI0,ZI1,sumstats,d); % compute the distance matrix
 
@@ -90,7 +104,7 @@ for i=1:M
         end
     end
 end
-avergeTime=toc/N
+avergeTime=toc/M
 
 % Plot the ROC graph
 close all;
@@ -100,11 +114,29 @@ for i=1:M
 end
 
 plotROC(TP,FP,[],FigLegend)
+toc
+%% plot ROC given the optimal delta
+TP=zeros(N,1);FP=zeros(N,1);
+optDelta=0.1;
+Lambda=NLRT_pred_delta(D0,D1,optDelta);
+for j=1:N
+    logGamma=LogGamma(j);
+    yhat=NLRT_pred_gamma(Lambda,logGamma); % Compute yhat given Lambda and logGamma
+    [tp,fp]=confusionMat(yn,yhat);
+    TP(j)=tp;
+    FP(j)=fp;
+    if mod(j,500)==0
+        display("Iteration="+j+",TP="+TP(j)+",FP="+FP(j));
+    end
+end
+plotROC(TP,FP,"ROC:NLRT","delta="+optDelta)
 
 %% find the optimal logGamma
-yn=zeros(nI,1); 
-optlogGamma=NLRT_opt_logGamma(hyp0,C0,mu0,ZI0,ZI1,warpfunc,sumstats,d,K,kw,snI,1,alpha)
+delta=0.1;alpha=0.1;
+optlogGamma=NLRT_opt_logGamma(hyp0,C0,mu0,ZI0,ZI1,warpfunc,sumstats,d,K,kw,snI,delta,alpha)
 
 %% The performance at the opt_logGamma
+Lambda=NLRT_pred_delta(D0,D1,delta);
+% optlogGamma=0;
 yhat=NLRT_pred_gamma(Lambda,optlogGamma); % Compute yhat given delta and logGamma
 [tp,fp]=confusionMat(yn,yhat)

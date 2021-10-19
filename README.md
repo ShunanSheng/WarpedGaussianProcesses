@@ -1,4 +1,6 @@
 # Warped Gaussian Process Classfication
+[update on 06 Oct 2021]: include the g_and_h distribution into makedist, allowing SBLUE to take different transition matrix at each sensor.
+
 
 ## Experiment
 Multiple expriments have been conducted to validate our algorithms. In the [test_Synthetic_Data.m][e01], we create a synthetic dataset of sensor network depolyed in R^2 with 2500 spatial points over the simplex [-1,1] x [-1,1]. At each location, based on the value of the spatial field, a sequence of point/integral observastions is generated from either H0 or H1. 

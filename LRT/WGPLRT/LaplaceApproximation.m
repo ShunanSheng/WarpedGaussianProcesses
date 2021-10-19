@@ -16,13 +16,20 @@ function [Qval,vhat,A]=LaplaceApproximation(pd,Kinv,warpinv,x0,lb,ub)
 
     % Initialize the function
     G=@(x) warpinv(pd,x);
-    Q=@(x) -1/2*G(x)'*Kinv*G(x)+sum(log(gradientG(pd,G,x)));
+    Q=@(x)  Qfunc(G,Kinv,pd,x);
     Qneg=@(x) -Q(x);
     
-    % Use Interior point to find the mode and maximum value of Q
-    [vhat,Qnval]=InteriorPoint(Qneg,x0,lb,ub);
+    if isempty(lb) && isempty(ub)
+        options=optimoptions('fminunc','Display','iter');
+        [vhat,Qnval] = fminunc(Qneg,x0,options);
+    else
+        % Use Interior point to find the mode and maximum value of Q
+        [vhat,Qnval]=InteriorPoint(Qneg,x0,lb,ub);
+    end 
     Qval=-Qnval;
     A=-hessianQ(pd,Kinv,G,vhat); % negative hessian or hessian
-    
+    if max(abs(gradientQ(pd,Kinv,G,vhat)),[],'all')>0.1
+        warning("vhat is not local maxmimum")
+    end
 end
 

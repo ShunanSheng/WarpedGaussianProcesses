@@ -1,23 +1,25 @@
-classdef g_and_h < prob.ToolboxFittableParametricDistribution
+classdef g_and_hDistribution < prob.ToolboxFittableParametricDistribution
 % This is a sample implementation of the Laplace distribution. You can use
 % this template as a model to implement your own distribution. Create a
 % directory called '+prob' somewhere on your path, and save this file in
 % that directory using a name that matches your distribution name.
 %
-%    An object of the LaplaceDistribution class represents a Laplace
-%    probability distribution with a specific location parameter MU and
-%    scale parameter SIGMA. This distribution object can be created directly
+%    An object of the LaplaceDistribution class represents a g_and_h
+%    probability distribution with a specific location parameter g and
+%    scale parameter h. This distribution object can be created directly
 %    using the MAKEDIST function or fit to data using the FITDIST function.
 %
-%    LaplaceDistribution methods:
-%       cdf                   - Cumulative distribution function
+%    note that only limited propeties of g_and_h are implemented, indicated
+%    as [done] , others are directly adopted from the Laplace distribution
+%    g_and_hDistribution methods:
+%       cdf                   - Cuglative distribution function [done]
 %       fit                   - Fit distribution to data
-%       icdf                  - Inverse cumulative distribution function
+%       icdf                  - Inverse cuglative distribution function [done]
 %       iqr                   - Interquartile range
 %       mean                  - Mean
 %       median                - Median
 %       paramci               - Confidence intervals for parameters
-%       pdf                   - Probability density function
+%       pdf                   - Probability density function [done]
 %       proflik               - Profile likelihood function
 %       random                - Random number generation
 %       std                   - Standard deviation
@@ -26,8 +28,8 @@ classdef g_and_h < prob.ToolboxFittableParametricDistribution
 %
 %    LaplaceDistribution properties:    
 %       DistributionName      - Name of the distribution
-%       mu                    - Value of the mu parameter
-%       sigma                 - Value of the sigma parameter
+%       g                     - Value of the g parameter
+%       h                     - Value of the h parameter
 %       NumParameters         - Number of parameters
 %       ParameterNames        - Names of parameters
 %       ParameterDescription  - Descriptions of parameters
@@ -43,52 +45,55 @@ classdef g_and_h < prob.ToolboxFittableParametricDistribution
 
 %   Copyright 2020 The MathWorks, Inc.
 
-    % All ProbabilityDistribution objects must specify a DistributionName
+    % All ProbabilityDistribution objects gst specify a DistributionName
     properties(Constant)
 %DistributionName Name of distribution
 %    DistributionName is the name of this distribution.
-        DistributionName = 'g_and_h';
+        DistributionName = 'g and h';
     end
 
     % Optionally add your own properties here. For this distribution it's convenient
-    % to be able to refer to the mu and sigma parameters by name, and have them
+    % to be able to refer to the g and h parameters by name, and have them
     % connected to the proper element of the ParameterValues property. These are
     % dependent properties because they depend on ParameterValues.
     properties(Dependent=true)
-%g Location parameter
+% g  parameter
 %    g : the g parameter
         g
         
-%h Scale parameter
+% h  parameter
 %    h is the h parameter
         h
+% loc location
+        loc
+% sca scale
+        sca
     end
     
-    % All ParametricDistribution objects must specify values for the following
+    % All ParametricDistribution objects gst specify values for the following
     % constant properties (they are the same for all instances of this class).
     properties(Constant)
 %NumParameters Number of parameters
 %    NumParameters is the number of parameters in this distribution.
 
-        NumParameters = 2;
+        NumParameters = 4;
         
 %ParameterName Name of parameter
 %    ParameterName is a two-element cell array containing names
 %    of the parameters of this distribution.
-        ParameterNames = {'g' 'h'};
+        ParameterNames = {'g' 'h','loc','sca'};
         
 %ParameterDescription Description of parameter
 %    ParameterDescription is a two-element cell array containing
 %    descriptions of the parameters of this distribution.
-        ParameterDescription = {'g parameter' 'h parameter'};
+        ParameterDescription = {'g parameter' 'h parameter' 'location' 'scale'};
     end
-
-    % All ParametricDistribution objects must include a ParameterValues property
+    % All ParametricDistribution objects gst include a ParameterValues property
     % whose value is a vector of the parameter values, in the same order as
     % given in the ParameterNames property above.
     properties(GetAccess='public',SetAccess='protected')
 %ParameterValues Values of the distribution parameters
-%    ParameterValues is a two-element vector containing the mu and sigma
+%    ParameterValues is a two-element vector containing the g and h
 %    values of this distribution.
         ParameterValues
     end
@@ -98,60 +103,109 @@ classdef g_and_h < prob.ToolboxFittableParametricDistribution
         % values or it can supply default values. These values should be
         % checked to make sure they are valid. They should be stored in the
         % ParameterValues property.
-        function pd = g_and_h(mu,sigma)
+        function pd = g_and_hDistribution(g,h,loc,sca)
             if nargin==0
-                mu = 0;
-                sigma = 1;
+                g = 0;
+                h = 0;
+                loc = 0;
+                sca = 1;
             end
-            checkargs(mu,sigma);
+            if ~exist('loc', 'var') || isempty(loc)
+                loc = 0;
+            end
+
+            if ~exist('sca', 'var') || isempty(sca)
+                sca = 1;
+            end
+            checkargs(g,h,loc,sca);
             
-            pd.ParameterValues = [mu sigma];
+            pd.ParameterValues = [g h loc sca];
             
-            % All FittableParametricDistribution objects must assign values
+            % All FittableParametricDistribution objects gst assign values
             % to the following two properties. When an object is created by
             % the constructor, all parameters are fixed and the covariance
             % matrix is entirely zero.
-            pd.ParameterIsFixed = [true true];
+            pd.ParameterIsFixed = [true true true true];
             pd.ParameterCovariance = zeros(pd.NumParameters);
         end
         
         % Implement methods to compute the mean, variance, and standard
         % deviation.
         function m = mean(this)
-            m = this.mu;
+            if this.g==0 && this.h<1
+                m=this.loc;
+            elseif this.g~=0 && this.h<1
+                v=1/this.g/sqrt(1-this.h)*(exp(this.g^2/(1-this.h)/2)-1);
+                m=this.loc+this.sca*v;
+            else
+                m=NaN;
+            end
+            if isnan(m)
+                warning("mean is not defined for g=%4.2f and h=%4.2f",this.g, this.h);
+            end
         end
         function s = std(this)
-            s = sqrt(2)*this.sigma;
+            s = sqrt(this.var);
         end
         function v = var(this)
-            v = 2*this.sigma^2;
+            if  this.h<1/2
+                if this.g==0
+                    e2 = 1./sqrt((1-2*this.h).^3);
+                else 
+                    e2 = (1-2*exp(this.g^2/(2-4*this.h))+...
+                        exp(2*this.g^2/(1-2*this.h)))/this.g^2/sqrt(1-2*this.h);
+                end
+                v = this.sca^2*e2+2*this.sca*this.loc*this.mean+this.loc^2-...
+                    this.mean^2;
+            else
+                v=NaN;
+            end
+            if isnan(v)
+                warning("variance is not defined for g=%4.2f and h=%4.2f",this.g, this.h);
+            end
         end
     end
     methods
         % If this class defines dependent properties to represent parameter
-        % values, their get and set methods must be defined. The set method
+        % values, their get and set methods gst be defined. The set method
         % should mark the distribution as no longer fitted, because any
         % old results such as the covariance matrix are not valid when the
         % parameters are changed from their estimated values.
-        function this = set.mu(this,mu)
-            checkargs(mu,this.sigma);
-            this.ParameterValues(1) = mu;
+        function this = set.g(this,g)
+            checkargs(g,this.h,this.loc,this.sca);
+            this.ParameterValues(1) = g;
             this = invalidateFit(this);
         end
-        function this = set.sigma(this,sigma)
-            checkargs(this.mu,sigma);
-            this.ParameterValues(2) = sigma;
+        function this = set.h(this,h)
+            checkargs(this.g,h,this.loc,this.sca);
+            this.ParameterValues(2) = h;
             this = invalidateFit(this);
         end
-        function mu = get.mu(this)
-            mu = this.ParameterValues(1);
+        function this = set.loc(this,loc)
+            checkargs(this.g,this.h,loc,this.sca);
+            this.ParameterValues(3) = loc;
+            this = invalidateFit(this);
         end
-        function sigma = get.sigma(this)
-            sigma = this.ParameterValues(2);
+        function this = set.sca(this,sca)
+            checkargs(this.g,this.h,this.loc,sca);
+            this.ParameterValues(4) = sca;
+            this = invalidateFit(this);
+        end
+        function g = get.g(this)
+            g = this.ParameterValues(1);
+        end
+        function h = get.h(this)
+            h = this.ParameterValues(2);
+        end
+        function loc = get.loc(this)
+            loc = this.ParameterValues(3);
+        end
+        function sca = get.sca(this)
+            sca = this.ParameterValues(4);
         end
     end
     methods(Static)
-        % All FittableDistribution classes must implement a fit method to fit
+        % All FittableDistribution classes gst implement a fit method to fit
         % the distribution from data. This method is called by the FITDIST
         % function, and is not intended to be called directly
         function pd = fit(x,varargin)
@@ -201,56 +255,45 @@ classdef g_and_h < prob.ToolboxFittableParametricDistribution
         % parameter values stored in a LaplaceDistribution object. For
         % example, the cdf method implemented in a parent class invokes the
         % cdffunc static method and provides it with the parameter values.
-        function [nll,acov] = likefunc(params,x) % likelihood function
-            n = length(x);
-            mu = params(1);
-            sigma = params(2);
-            
-            nll = -sum(log(prob.LaplaceDistribution.pdffunc(x,mu,sigma)));
-            acov = (sigma^2/n) * eye(2);
-        end
-        function y = cdffunc(x,mu,sigma)          % cumulative distribution function
-            if sigma==0
-                y = double(x>=mu);
-            else
-                z = (x-mu) ./ sigma;
-                y = 0.5 + sign(z).*(1-exp(-abs(z)))/2;
-            end
+%         function [nll,acov] = likefunc(params,x) % likelihood function
+%             n = length(x);
+%             g = params(1);
+%             h = params(2);
+%             
+%             nll = -sum(log(prob.LaplaceDistribution.pdffunc(x,g,h)));
+%             acov = (h^2/n) * eye(2);
+%         end
+         function y = cdffunc(x,g,h,loc,sca)          % cumulative distribution function
+            [y, ~ ]=g_and_h_cdf(x, g, h,loc,sca);
             y(isnan(x)) = NaN;
+         end
+        
+        function y = pdffunc(x,g,h,loc,sca)         % probability density function
+            y = g_and_h_pdf(x, g, h, loc, sca);
         end
-        function y = pdffunc(x,mu,sigma)         % probability density function
-            y = exp(-abs(x - mu)/sigma) / (2*sigma);
+        function y = invfunc(p,g,h,loc,sca)         % inverse cdf
+            y= g_and_h_invcdf(p, g, h ,loc,sca);
         end
-        function y = invfunc(p,mu,sigma)         % inverse cdf
-            if nargin<2, mu = 0; end
-            if nargin<2, sigma = 1; end
-            if sigma==0
-                y = mu + zeros(size(p));
-            else
-                u = p-0.5;
-                y = mu - sigma.*sign(u).*log(1-2*abs(u));
-            end
-            y(p < 0 | 1 < p) = NaN;
-        end
-        function y = randfunc(mu,sigma,varargin) % random number generator
-            y = prob.LaplaceDistribution.invfunc(rand(varargin{:}),mu,sigma);
+        
+        function y = randfunc(g,h,varargin) % random number generator
+            y = prob.LaplaceDistribution.invfunc(rand(varargin{:}),g,h);
         end
     end
     methods(Static,Hidden)
-        % All ToolboxDistributions must implement a getInfo static method
+        % All ToolboxDistributions gst implement a getInfo static method
         % so that Statistics and Machine Learning Toolbox functions can get information about
         % the distribution.
         function info = getInfo
             
             % First get default info from parent class
-            info = getInfo@prob.ToolboxFittableParametricDistribution('prob.LaplaceDistribution');
+            info = getInfo@prob.ToolboxFittableParametricDistribution('prob.g_and_hDistribution');
             
             % Then override fields as necessary
-            info.name = 'Laplace';
-            info.code = 'laplace';
+            info.name = 'g and h';
+            info.code = 'g and h';
             % info.pnames is obtained from the ParameterNames property
             % info.pdescription is obtained from the ParameterDescription property
-            % info.prequired = [false false] % Change if any parameter must
+            % info.prequired = [false false] % Change if any parameter gst
                                              % be specified before fitting.
                                              % An example would be the N
                                              % parameter of the binomial
@@ -274,7 +317,7 @@ classdef g_and_h < prob.ToolboxFittableParametricDistribution
                                              % vector.
             % info.iscontinuous = true       % Set to false if x can take
                                              % only integer values.
-            info.islocscale = true;          % Set to true if this is a
+%             info.islocscale = true;          % Set to true if this is a
                                              % location/scale distribution
                                              % (no other parameters).
             % info.uselogpp = false          % Set to true if a probability
@@ -293,11 +336,17 @@ classdef g_and_h < prob.ToolboxFittableParametricDistribution
 end % classdef
 
 % The following utilities check for valid parameter values
-function checkargs(mu,sigma)
-if ~(isscalar(mu) && isnumeric(mu) && isreal(mu) && isfinite(mu))
-    error('MU must be a real finite numeric scalar.')
+function checkargs(g,h,loc,sca)
+if ~(isscalar(g) && isnumeric(g) && isreal(g) && isfinite(g))
+    error('g gst be a real finite numeric scalar.')
 end
-if ~(isscalar(sigma) && isnumeric(sigma) && isreal(sigma) && sigma>=0 && isfinite(sigma))
-    error('SIGMA must be a positive finite numeric scalar.')
+if ~(isscalar(h) && isnumeric(h) && isreal(h) && h>=0 && isfinite(h))
+    error('h gst be a positive finite numeric scalar.')
+end
+if ~(isscalar(loc) && isnumeric(loc) && isreal(loc) && isfinite(loc))
+    error('loc gst be a real finite numeric scalar.')
+end
+if ~(isscalar(sca) && isnumeric(sca) && isreal(sca) && sca>=0 && isfinite(sca))
+    error('sca gst be a positive finite numeric scalar.')
 end
 end

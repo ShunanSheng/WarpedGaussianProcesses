@@ -7,6 +7,6 @@ function Ypred=SBLUE_pred(SBLUE,Yhat)
    % Output: Ypred : the prediction at xstar
 
    % prediction
-    g_star_pred=SBLUE.Covg / (SBLUE.CovY)*(Yhat-SBLUE.mY);
+    g_star_pred=SBLUE.mXstar+SBLUE.Covg / (SBLUE.CovY)*(Yhat-SBLUE.mY);
     Ypred=g_star_pred>SBLUE.c;
 end

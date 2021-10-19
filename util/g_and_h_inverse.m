@@ -1,7 +1,7 @@
-function [z, iter] = g_and_h_inverse(x, g, h, tol)
+function [z, iter] = g_and_h_inverse(xm, g, h, tol)
 %G_AND_H_INVERSE Inverse transform to recover the z values
 % Inputs:
-%       x: input to the cdf
+%       xm: input to the cdf (possible to be a matrix)
 %       g: the g parameter
 %       h: the h parameter
 %       tol: numerical tolerance, default is 1e-8
@@ -9,8 +9,10 @@ function [z, iter] = g_and_h_inverse(x, g, h, tol)
 %       z: corresponding z value for the standard normal distribution
 %       iter: number of iterations
 
+x = reshape(xm,[],1); % convert xm to column vector
 n = length(x);
 z = ones(n, 1);
+
 
 if ~exist('tol', 'var') || isempty(tol)
     tol = 1e-8;
@@ -81,7 +83,9 @@ if any(exclude_list)
     z(exclude_list) = zr;
 end
 
-assert(max(abs(t_func(z) - x)) < tol, 'unexpected error');
+assert(max(abs(t_func(z) - x),[],'all') < tol, 'unexpected error');
+
+z = reshape(z,size(xm,1),size(xm,2));
 
 end
 

@@ -1,4 +1,4 @@
-function Data=SimSynData(SP,H0,H1,warpfunc,modelHyp)
+function Data=SimSynData(SP,H0,H1,warpfunc_sf, warpfunc, modelHyp)
     % Generate a test dataset 
     %
     % Input: 
@@ -6,6 +6,7 @@ function Data=SimSynData(SP,H0,H1,warpfunc,modelHyp)
     % H0,H1 : paramters for null/alternative hypotheses
     % modelHyp : parameters for sensor network (T,M,K,snI,snP)
     % warpfunc : warpfunc handle
+    % warpfunc_sp : warpfunc handle for the spatial field
     
     % Output: 
     % ZP : all point observations M x NP 
@@ -17,25 +18,27 @@ function Data=SimSynData(SP,H0,H1,warpfunc,modelHyp)
     
     
     % Binary spatial field GP(0,C)
+    rng("default")
     meanfunc = SP.meanfunc; 
     covfunc = {SP.covfunc};
     hyp=SP.hyp;
 
     % Location of sensors 
-    n = 50; xinf=-1; xsup=1;
+    n = 50; xinf=-5; xsup=5;
     [X,Y]= meshgrid(linspace(xinf,xsup,n),linspace(xinf,xsup,n));
     xSp=reshape(X,[],1);
     ySp=reshape(Y,[],1); 
     x=[xSp,ySp];
     
     % Generate the lantent binary spatial field
-    y=SimWGP(hyp,meanfunc,covfunc,warpfunc,x);
+    y=SimWGP(hyp,meanfunc,covfunc,warpfunc_sf,x);
     
     % Total number of sensors
     N=length(y); 
     
     % The index of training and test data
-    indexTest=(1:5:N)';
+%     indexTest=(1:5:N)';
+    indexTest=randperm(N,floor(N/5))';
     indexTrain=setdiff(1:N,indexTest)';
     
     % The indexes of point sensors and integral sensors
@@ -65,7 +68,6 @@ function Data=SimSynData(SP,H0,H1,warpfunc,modelHyp)
     muP0 = meanfunc0( hyp0.mean, t);
     CP1 = chol(feval(covfunc1{:}, hyp1.cov, t)+1e-9*eye(M));
     muP1 = meanfunc1( hyp1.mean, t);
-    
         
     ZP0=SimPtData(hyp0,CP0,muP0,warpfunc,t,snP,nP0);
     ZP1=SimPtData(hyp1,CP1,muP1,warpfunc,t,snP,nP1);

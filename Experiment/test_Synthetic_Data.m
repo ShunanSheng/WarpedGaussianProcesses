@@ -3,30 +3,39 @@ clear all,close all,clc
 % Create the synthetic dataset
 % Setup for Spatial Random field
 meanfunc = @meanConst; 
-covfunc = {@covSEiso}; ell = 1/2; sf = 1; hyp.cov=log([ell; sf]); q=0.5;
-pd=makedist("Binomial",'N',1,'p',q); % Bernouli(p)
-hyp=struct('mean',0,'cov',hyp.cov,'dist',pd);
+covfunc = {@covSEiso}; ell = 1/2; sf = 1; hyp.cov=log([ell; sf]); 
+
+% q=0.5; pd=makedist("Binomial",'N',1,'p',q); % Bernouli(p)
+c=0;pd=[];
+hyp=struct('mean',0,'cov',hyp.cov,'dist',pd,'thres',c);
 
 
 %%% H0 Null hypothesis
 meanfunc0 = @meanConst; 
-covfunc0 = {@covSEiso}; ell0 =1/2; sf0 = 1; hyp0.cov=log([ell0; sf0]);
-pd0=makedist('Normal','mu',2,'sigma',4)
+% covfunc0 = {@covSEiso}; ell0 =1/2; sf0 = 1; hyp0.cov=log([ell0; sf0]);
+covfunc0 = {@covMaterniso, 1}; ell1=1; sf1=1; hyp0.cov=log([ell1; sf1]);
+% pd0=makedist('Normal','mu',2,'sigma',4)
 % pd0=makedist('Normal','mu',0,'sigma',1);
 % pd0=makedist('Gamma','a',2,'b',4);
+% pd0 = makedist("g_and_h","g",0.1,"h",0.1,'loc',1,'sca',1)
+pd0 = makedist("g_and_h","g",0.1,"h",0.4,'loc',1,'sca',1)
 
 %%% H1 Alternative hypothesis
 
 meanfunc1 = @meanConst; 
-covfunc1 = {@covSEiso}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
+% covfunc1 = {@covSEiso}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
+covfunc1 = {@covMaterniso, 5}; ell1=1; sf1=1; hyp1.cov=log([ell1; sf1]);
 % covfunc1 = {@covMaterniso, 3}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
-% pd1=makedist('Gamma','a',1,'b',1);
-% pd1=makedist('Beta','a',1,'b',1);
-% pd1=makedist('Normal','mu',0,'sigma',1);
-pd1=makedist('Logistic','mu',10,'sigma',10)
+% pd1=makedist('Gamma','a',1,'b',1)
+% pd1=makedist('Beta','a',1,'b',1)
+% pd1=makedist('Normal','mu',0,'sigma',1)
+% pd1=makedist('Logistic','mu',2,'sigma',5)
+% pd1 = makedist("g_and_h","g",0.1,"h",0.1,'loc',0,'sca',1)
+pd1 = makedist("g_and_h","g",0.1,"h",0.4,'loc',1,'sca',1)
+
 
 %%% Parameters for the sensor network
-T=10; M=20; K=20; snP=0.1; snI=0.1;
+T=20; M=50; K=50; snP=0.1; snI=0.1;
 modelHyp=struct("T",T,"M",M,"K",K,"snI",snI,"snP",snP);
 
 %%% Lower/upper bound for optimization in Laplace Approximation,i.e. the range of W
@@ -47,10 +56,10 @@ H1=struct("meanfunc",meanfunc1,"covfunc",covfunc1,"hyp",hyp1);
 %%% warping function
 warpfunc=@(pd,p) invCdf(pd,p);
 warpinv=@(pd,p) invCdfWarp(pd,p);
-
+warpfunc_sf=@(c,x) indicator(c,x);
 
 %%% Generate synthetic data
-Data=SimSynData(SP,H0,H1,warpfunc,modelHyp);
+Data=SimSynData(SP,H0,H1,warpfunc_sf, warpfunc, modelHyp);
 
 %%
 clc;
@@ -61,10 +70,9 @@ Xtest=x(indexTest,:);
 Ytrain=y(indexTrain);
 Ytest=y(indexTest);
 
-% The vector to store the decisions from LRT
-Yhat=zeros(length(y),1);
+Yhat=zeros(length(y),1);       % The vector to store the decisions from LRTs
 
-% WGPLRT
+%% WGPLRT
 t=Data.t;ZP0=Data.ZP.H0;ZP1=Data.ZP.H1;xP0=Data.xP.H0;xP1=Data.xP.H1;
 
 % parameters
@@ -78,7 +86,7 @@ x_init=[ones(M,1)*0.5, ones(M,1)*0.5];
 LRT=WGPLRT_opt(H0,H1,warpinv,t,x_init, snP);
 
 % find the logGamma at significance level alpha
-alpha=0.05;
+alpha=0.1;
 logGammaP=WGPLRT_opt_gamma(LRT,hyp0,CP0,muP0,warpfunc,t,snP,alpha);
 
 % LRT for ZP0 and ZP1
@@ -105,17 +113,19 @@ muI0 = meanfunc0( hyp0.mean, tI);
 CI1 = chol(feval(covfunc1{:}, hyp1.cov, tI)+1e-9*eye(n));
 muI1 = meanfunc1( hyp1.mean, tI);
 
-sumstats=@summaryMoment; % the summary statistic
+% sumstats=@summaryMoment; % the summary statistic
+sumstats=@(z) summaryAuto(z,4);
 d=@distEuclid; % distance metric
 J=100000; % number of samples per hypothesis
 [ZI0,ZI1]=NLRT_gene(hyp0,CI0,muI0,hyp1,CI1,muI1, warpfunc,K,kw,snI,J); % generate J samples of integral observations from null ...                                                                   % and alternative hypothesis
 
 % parameters for NLRT
-delta=5; % distance tolerance
+delta=0.1; % distance tolerance
+% alpha=0.1;
 % logGammaI=NLRT_opt_logGamma(hyp0,CI0,muI0,ZI0,ZI1,warpfunc,sumstats,d,K,kw,snI,delta,alpha)
-% In practice, NLRT performs so good that Lambda is most likely to be
-% infinity, so we may set logGammaI=1 for simplicity.
-logGammaI=log(1);
+% In practice, NLRT performs so unstble that Lambda is most likely to be
+% infinity, so we may need to set logGammaI according to the experiment 
+logGammaI=-0.5182;
 
 % NLRT for Z1
 [D0,D1]=NLRT_stats(Z0,ZI0,ZI1,sumstats,d); % compute the distance matrix
@@ -132,7 +142,7 @@ Yhat(xI1)=yhat_int_1;
 
 Ytrain_hat=Yhat(indexTrain);
 %% Test performance of LRTs
-% Overall
+% Overall, training loss
 clc
 [tp,fp]=confusionMat(Ytrain,Ytrain_hat);
 
@@ -141,31 +151,74 @@ display("Overall  "+":TPR="+tp+",FPR="+fp+",MSE="+sum((Ytrain-Ytrain_hat).^2))
 % WGPLRT
 YP_hat=[yhat_pt_0;yhat_pt_1];
 YP=[y(xP0);y(xP1)];
-[tp,fp]=confusionMat(YP,YP_hat);
-display("WGPLRT  "+":TPR="+tp+",FPR="+fp+",MSE="+sum((YP-YP_hat).^2))
+[wtp,wfp]=confusionMat(YP,YP_hat);
+display("WGPLRT  "+":TPR="+wtp+",FPR="+wfp+",MSE="+sum((YP-YP_hat).^2))
 
 % NLRT
 YI_hat=[yhat_int_0;yhat_int_1];
 YI=[y(xI0);y(xI1)];
-[tp,fp]=confusionMat(YI,YI_hat);
+[ntp,nfp]=confusionMat(YI,YI_hat);
 
-display("NLRT  "+":TPR="+tp+",FPR="+fp+",MSE="+sum((YI-YI_hat).^2))
+display("NLRT  "+":TPR="+ntp+",FPR="+nfp+",MSE="+sum((YI-YI_hat).^2))
 
+%% KNN 
+tic;
+Mdl = fitcknn(Xtrain,Ytrain_hat,'NumNeighbors',5,'Standardize',1);
+[Ypred,score,cost] = predict(Mdl,Xtest);
+MSE_KNN=sum((Ypred-Ytest).^2)/length(Ypred);
+t_KNN=toc;
 
 %% SBLUE
-clc;
 % Offline phase, super super slow
-tic
-SBLUEprep=SBLUE_stats_prep(covfunc,hyp.cov,Xtrain,Xtest,q); 
-toc
+SBLUEprep=SBLUE_stats_prep(covfunc,meanfunc,hyp,Xtrain,Xtest); 
 
 %%
 % Online phase: given the knowlegde of the LRT performance
-rho=1;lambda=0.01;
-A=[rho,1-rho;lambda,1-lambda];
-SBLUE=SBLUE_stats(SBLUEprep,A,q);
+tic
+liP=ismember(indexTrain,[xP0;xP1]);
+liI=ismember(indexTrain,[xI0;xI1]);
+rho=[1-wfp,1-nfp];lambda=[wtp,ntp];
+A1=[rho(1),1-rho(1);1-lambda(1),lambda(1)];
+A2=[rho(2),1-rho(2);1-lambda(2),lambda(2)];
+
+transitionMat=SBLUE_confusion(A1,A2,liP,liI);
+SBLUE=SBLUE_stats(SBLUEprep,transitionMat,c);
 Ypred=SBLUE_pred(SBLUE,Ytrain_hat);
 [tp,fp]=confusionMat(Ytest,Ypred);
-display("SBLUE  "+":TPR="+tp+",FPR="+fp+",MSE="+sum((Ytest-Ypred).^2/length(Ytest)))
+MSE_SBLUE=sum((Ytest-Ypred).^2)/length(Ypred);
+t_SBLUE=toc;
+
+%%
+fprintf('SBLUE w noise has MSE= %4.3f,with time= %4.3f\n',MSE_SBLUE,t_SBLUE);
+fprintf('KNN w noise has MSE= %4.3f,with time= %4.3f\n',MSE_KNN,t_KNN);
+
+%% Plot the graph
+clc, close all 
+X=reshape(x(:,1),[50,50]);
+Y=reshape(x(:,2),[50,50]);
+Z=double(reshape(y,[50,50]));
+figure()
+surf(X,Y,Z,"DisplayName","latent binary field");
+shading interp
+view(2)
+colorbar
+hold on
+plot3(Xtest(:,1),Xtest(:,2),Ytest, ['x','r'],'DisplayName','un-monitored location');
+legend()
+hold off
+title('True Latent Binary Spatial Field')
+
+Yhat(indexTest)=Ypred;
+Zhat=double(reshape(Yhat,[50,50]));
+figure()
+surf(X,Y,Zhat,"DisplayName","latent binary field");
+shading interp
+view(2)
+colorbar
+hold on
+plot3(Xtest(:,1),Xtest(:,2),Ypred, ['x','r'],'DisplayName','un-monitored location');
+legend()
+title("The Reconstructed Binary Spatial Field")
+
 
 

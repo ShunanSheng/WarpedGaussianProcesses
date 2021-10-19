@@ -1,14 +1,12 @@
-function m=meanY(A,c,N)
+function m=meanY(p,chat)
     % Calculate E(Yhat)
     %
     % Input : 
-    % A : transition matrix
-    % c : invNormCdf(1-q)
-    % N : the length
+    % p : the transition probability
+    % chat : the normalzied threshold
     %
     % Output:
     % m: E(Yhat)
-    
-    p11=A(4);p01=A(3);
-    m=(p11*normcdf(-c)+p01*normcdf(c)).*ones(N,1);
+
+    m=p.p11.*normcdf(-chat)+p.p01.*normcdf(chat);
 end
