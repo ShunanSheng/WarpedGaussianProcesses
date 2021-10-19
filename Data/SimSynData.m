@@ -18,6 +18,7 @@ function Data=SimSynData(SP,H0,H1,warpfunc_sf, warpfunc, modelHyp)
     
     
     % Binary spatial field GP(0,C)
+    rng("default")
     meanfunc = SP.meanfunc; 
     covfunc = {SP.covfunc};
     hyp=SP.hyp;
@@ -36,7 +37,8 @@ function Data=SimSynData(SP,H0,H1,warpfunc_sf, warpfunc, modelHyp)
     N=length(y); 
     
     % The index of training and test data
-    indexTest=(1:5:N)';
+%     indexTest=(1:5:N)';
+    indexTest=randperm(N,floor(N/5))';
     indexTrain=setdiff(1:N,indexTest)';
     
     % The indexes of point sensors and integral sensors
@@ -66,7 +68,6 @@ function Data=SimSynData(SP,H0,H1,warpfunc_sf, warpfunc, modelHyp)
     muP0 = meanfunc0( hyp0.mean, t);
     CP1 = chol(feval(covfunc1{:}, hyp1.cov, t)+1e-9*eye(M));
     muP1 = meanfunc1( hyp1.mean, t);
-    
         
     ZP0=SimPtData(hyp0,CP0,muP0,warpfunc,t,snP,nP0);
     ZP1=SimPtData(hyp1,CP1,muP1,warpfunc,t,snP,nP1);

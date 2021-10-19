@@ -1,6 +1,6 @@
 function sz=summaryAutoMoment(z)
-    % Summary Statistic 4-dimensional vector 
-    % (mean,var,mode,kurtosis)
+    % Summary Statistic 5-dimensional vector 
+    % (mean,var,mode,kurtosis, ACF(,1))
     ncol=size(z,2);
     sz=zeros(5,ncol);
     sz(1,:)=mean(z);

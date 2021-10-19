@@ -140,26 +140,28 @@ classdef g_and_hDistribution < prob.ToolboxFittableParametricDistribution
             else
                 m=NaN;
             end
+            if isnan(m)
+                warning("mean is not defined for g=%4.2f and h=%4.2f",this.g, this.h);
+            end
         end
         function s = std(this)
             s = sqrt(this.var);
         end
         function v = var(this)
-            if this.g == 0
-                if this.h < 1
-                    v=1./(1-this.h);
-                else
-                    v=NaN;
-                end
-            else 
-                if this.h<1/2
+            if  this.h<1/2
+                if this.g==0
+                    e2 = 1./sqrt((1-2*this.h).^3);
+                else 
                     e2 = (1-2*exp(this.g^2/(2-4*this.h))+...
                         exp(2*this.g^2/(1-2*this.h)))/this.g^2/sqrt(1-2*this.h);
-                    v = this.sca^2*e2+2*this.sca*this.loc*this.mean+this.loc^2-...
-                    this.mean^2;
-                else
-                    v=NaN;
                 end
+                v = this.sca^2*e2+2*this.sca*this.loc*this.mean+this.loc^2-...
+                    this.mean^2;
+            else
+                v=NaN;
+            end
+            if isnan(v)
+                warning("variance is not defined for g=%4.2f and h=%4.2f",this.g, this.h);
             end
         end
     end

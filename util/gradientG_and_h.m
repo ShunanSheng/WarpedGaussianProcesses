@@ -28,7 +28,6 @@ function dgh=gradientG_and_h(x, g, h, loc, sca, tol)
         else
             d2g_and_h = sca.*(exp(h.*z.^2./2).*h.*z+exp(h.*z.^2./2).*(2.*h.*z+h.^2.*z.^3));
         end
-        
 
     end
 

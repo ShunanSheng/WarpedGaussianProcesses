@@ -153,16 +153,6 @@ fprintf('GPR wo noise has MSE= %4.3f,with time= %4.3f\n',MSE_GPR,t_GPR);
 
 
 
-%% Plot the graph
-sz=double(reshape(z,n,n));
-sg=double(reshape(g,n,n));
-figure()
-surf(X,Y,sz)
-title("Warped data")
-figure()
-surf(X,Y,sg)
-title("Latent process")
-
 %%
 
 % In order to plot MSE graph to see the change of MSE over Rho

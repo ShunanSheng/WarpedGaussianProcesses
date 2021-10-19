@@ -15,4 +15,5 @@ function df=gradientDist(pd,v)
         y=pdf(pd,V);
         df=diff(y,1,2)/2/h;
     end
+    
 end

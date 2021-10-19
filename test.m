@@ -1,15 +1,44 @@
+clc,close all
+
+figure1=openfig('ROCNLRT.fig')
+figure2=openfig('ROCWGPLRT.fig')
+
+L = findobj(figure1,'type','line');
+copyobj(L,findobj(figure2,'type','axes'));
+
+%%
+
+clc;clear all
+
+[X,Y] = meshgrid(1:0.5:10.5,1:20);
+Z = sin(X) + cos(Y);
+C = X.*Y;
+surf(X,Y,Z,C)
+view(2)
+colorbar
+%%
+
+x = linspace(-2*pi,2*pi);
+y = linspace(0,4*pi);
+[X,Y] = meshgrid(x,y);
+Z = sin(X)+cos(Y);
+contour(X,Y,Z)
+
+
+
+%%
 clc,clear
-g=0;h=0;loc=2;sca=3;tol=1e-8;
-pd=makedist("g_and_h","g",g,"h",h,'loc',loc,'sca',sca);
-z=randn(1000,1);
-x=g_and_h(z, g, h, loc, sca);
-
-
-[p, ~] = g_and_h_cdf(x, g, h, loc, sca, tol);
-normcdf(z);
-
-pdf_gh = g_and_h_pdf(x, g, h, loc, sca, tol);
-pnorm = normpdf(z);
+g=0.2;h=1;loc=2;sca=3;tol=1e-8;
+% pd=makedist("g_and_h","g",g,"h",h,'loc',loc,'sca',sca);
+% z=randn(1000,1);
+% x=g_and_h(z, g, h, loc, sca);
+% 
+% 
+% [p, ~] = g_and_h_cdf(x, g, h, loc, sca, tol);
+% normcdf(z);
+% 
+% pdf_gh = g_and_h_pdf(x, g, h, loc, sca, tol);
+% pnorm = normpdf(z);
 
 P=@(x) g_and_h_pdf(x, g, h, loc, sca, tol);
 integral(P,-Inf,Inf)
@@ -26,7 +55,9 @@ legend("x","z")
 %%
 clc, clear
 % pd=makedist('Normal','mu',2,'sigma',4);
-pd=makedist('tLocationScale','mu',-1,'sigma',1,'nu',3)
+% pd=makedist('tLocationScale','mu',-1,'sigma',1,'nu',3)
+g=0.5;h=0.4;loc=2;sca=3;tol=1e-8;
+pd=makedist("g_and_h","g",g,"h",h,'loc',loc,'sca',sca);
 meanfunc = @meanConst; 
 covfunc = {@covSEiso}; ell0 =1/2; sf0 = 1; hyp.cov=log([ell0; sf0]);
 warpfunc=@(pd,p) invCdf(pd,p);
@@ -61,8 +92,6 @@ d2Ghat=gradientVecEmpirical(L,v);
 diffd2G = d2Ghat-diag(d2G);
 
 
-
-
 Qv=Q(v);
 dQ=gradientQ(pd,Kinv,G,v);
 dQhat = gradientEmpirical(Q,v);
@@ -71,7 +100,7 @@ diffdQ = dQhat-dQ
 d2Q=hessianQ(pd,Kinv,G,v);
 
 F=@(x) gradientQ(pd,Kinv,G,x);
-d2Qhat=gradientVecEmpirical(F,v);
+d2Qhat=gradientVecEmpirical(F,v)
 
 diffd2Q = d2Qhat-d2Q
 
@@ -164,21 +193,37 @@ dgh=grad_g_and_h(v, g, h, loc, sca)-df
 %% when h=g=0, the g_and_h transformation is effectively the identity
 clc;clear
 
-z=randn(10000,1);
-loc=0;sca=1;
-pd0=makedist("g_and_h","g",0.1,"h",0.2,'loc',loc,'sca',sca);
-x=g_and_h(z, pd0.g, pd0.h, loc, sca);
+z=randn(1000,1000);
+loc=1;sca=1;
+pd0=makedist("g_and_h","g",0,"h",0,'loc',loc,'sca',sca);
+% x=g_and_h(z, pd0.g, pd0.h, loc, sca);
+x = sca .* z + loc;
 
-pd1=makedist("g_and_h","g",0.1,"h",0.2,'loc',2,'sca',sca);
+pd1=makedist("g_and_h","g",0,"h",0.4,'loc',0,'sca',sca);
 y=g_and_h(z, pd1.g, pd1.h, loc, sca);
-disp(min(x))
-disp(min(y))
-figure()
-histogram(y,'Normalization','probability')
-hold on 
-histogram(x,'Normalization','probability')
+% mean(y.^2,[],'all')
+% 1/sqrt((1-2*0.4)^3)
 
 
+
+
+% disp(min(x))
+% disp(min(y))
+% figure()
+% histogram(y,'Normalization','pdf')
+% hold on
+% histogram(x,'Normalization','pdf')
+% legend("y","x")
+
+%%
+clc;clear
+z=randn(1000,1);
+g=0.5;h=0.4;loc=1;sca=1;tol=1e-8;
+pd0=makedist("g_and_h","g",g,"h",h,'loc',loc,'sca',sca);
+x=g_and_h(z, pd0.g, pd0.h, loc, sca);
+dgh=gradientG_and_h(x, g, h, loc, sca, tol);
+df=gradientDist(pd0,x);
+diff=dgh-df;
 
 %%
 diff=z-x;
