@@ -4,9 +4,7 @@ clear all,close all,clc
 % Setup for Spatial Random field
 meanfunc = @meanConst; 
 covfunc = {@covSEiso}; ell = 1/2; sf = 1; hyp.cov=log([ell; sf]); 
-
-% q=0.5; pd=makedist("Binomial",'N',1,'p',q); % Bernouli(p)
-c=0;pd=[];
+c=0;pd=[];% that is q=0.5 and pd=makedist("Binomial",'N',1,'p',q); % Bernouli(p)
 hyp=struct('mean',0,'cov',hyp.cov,'dist',pd,'thres',c);
 
 
@@ -70,7 +68,7 @@ Xtest=x(indexTest,:);
 Ytrain=y(indexTrain);
 Ytest=y(indexTest);
 
-Yhat=zeros(length(y),1);       % The vector to store the decisions from LRTs
+Yhat=zeros(length(y),1);   % The vector to store the decisions from LRTs
 
 %% WGPLRT
 t=Data.t;ZP0=Data.ZP.H0;ZP1=Data.ZP.H1;xP0=Data.xP.H0;xP1=Data.xP.H1;
@@ -121,11 +119,8 @@ J=100000; % number of samples per hypothesis
 
 % parameters for NLRT
 delta=0.1; % distance tolerance
-% alpha=0.1;
-% logGammaI=NLRT_opt_logGamma(hyp0,CI0,muI0,ZI0,ZI1,warpfunc,sumstats,d,K,kw,snI,delta,alpha)
-% In practice, NLRT performs so unstble that Lambda is most likely to be
-% infinity, so we may need to set logGammaI according to the experiment 
-logGammaI=-0.5182;
+alpha=0.1; % significance level
+optlogGamma=NLRT_opt_logGamma(hyp0,CI0,muI0,ZI0,ZI1,warpfunc,sumstats,d,K,kw,snI,delta,alpha);
 
 % NLRT for Z1
 [D0,D1]=NLRT_stats(Z0,ZI0,ZI1,sumstats,d); % compute the distance matrix
@@ -177,7 +172,7 @@ SBLUEprep=SBLUE_stats_prep(covfunc,meanfunc,hyp,Xtrain,Xtest);
 tic
 liP=ismember(indexTrain,[xP0;xP1]);
 liI=ismember(indexTrain,[xI0;xI1]);
-rho=[1-wfp,1-nfp];lambda=[wtp,ntp];
+rho=[1-,1-nfp];lambda=[wtp,ntp];
 A1=[rho(1),1-rho(1);1-lambda(1),lambda(1)];
 A2=[rho(2),1-rho(2);1-lambda(2),lambda(2)];
 
