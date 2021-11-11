@@ -1,13 +1,36 @@
+
+
+
+%%
+clear all clc, close all
+N=100000;
+r = gamrnd(10,1/2,N,1);
+s = gamrnd(2,4,N,1);
+histogram(r,'Normalization','pdf')
+hold on 
+histogram(s,'Normalization','pdf')
+legend("Gamma(10,1/2)","Gamma(2,4)")
+
+
+
+%%
 clc,close all
 
 figure1=openfig('ROCNLRT.fig')
-figure2=openfig('ROCWGPLRT.fig')
+figure2=openfig('ROCWGPLRT2.fig')
 
 L = findobj(figure1,'type','line');
 copyobj(L,findobj(figure2,'type','axes'));
 
 %%
 
+
+% Mdl = fitcknn(Xtrain,Ytrain_hat,'NumNeighbors',5,'Standardize',1);
+% [Ypred,score,cost] = predict(Mdl,Xtest);
+% MSE_KNN=sum((Ypred-Ytest).^2)/length(Ypred);
+% bias2_KNN=
+% t_KNN=toc;
+%%
 clc;clear all
 
 [X,Y] = meshgrid(1:0.5:10.5,1:20);

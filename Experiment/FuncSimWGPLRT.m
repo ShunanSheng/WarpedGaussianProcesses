@@ -1,47 +1,23 @@
-%%% Test for WGPLRT on the simulated data
-%%% WGPLRT works very well when pd0/pd1 are of full support. When one of
-%%% them is of restricted suppport, the Laplace approximation may fail if
-%%% the density is not concentrated away the boundaries of the support
-
-clear all,clc,close all;
+function [tp,fp,optLogGamma]=FuncSimWGPLRT(M,sn,alpha,printOpt,figOpt)
+% Given the input of signal variance and number of points, output the
+% corresponding tp, fp and optimal threshold
 
 %%% Initialize Temporal processes
 %%% H0 Null hypothesis
 meanfunc0 = @meanConst; 
-% covfunc0 = {@covSEiso}; ell0 =1/2; sf0 = 1; hyp0.cov=log([ell0; sf0]);
 covfunc0 = {@covMaterniso, 1}; ell1=1; sf1=1; hyp0.cov=log([ell1; sf1]);
-% covfunc0={@covFBM};sf0=1;h0=1/2;hyp0.cov=[log(sf0);-log(1/h0-1)];
-
-% pd0=makedist('Normal','mu',1,'sigma',1.2910)
-% pd0=makedist('Normal','mu',2,'sigma',4)
-% pd0=makedist('Gamma','a',4,'b',2)
-% pd0=makedist('Logistic','mu',8,'sigma',2)
-% pd0=makedist('Beta','a',4,'b',6)
-% pd0 = makedist('Stable','alpha',0.5,'beta',0.8,'gam',1,'delta',0)
-% pd0 = makedist('tLocationScale','mu',2,'sigma',5,'nu',3) % nv should be bigger than 2
-% pd0 = makedist("g_and_h","g",0.1,"h",0.1,'loc',0,'sca',1)
-pd0 = makedist("g_and_h","g",0.1,"h",0.4,'loc',1,'sca',1)
-
+pd0 = makedist("g_and_h","g",0.1,"h",0.4,'loc',1,'sca',1);
 
 
 %%% H1 Alternative hypothesis
 meanfunc1 = @meanConst; 
-% covfunc1 = {@covSEiso}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
 covfunc1 = {@covMaterniso, 5}; ell1=1; sf1=1; hyp1.cov=log([ell1; sf1]);
+pd1 = makedist("g_and_h","g",0.1,"h",0.4,'loc',1,'sca',1);
 
-% pd1=makedist('Gamma','a',2,'b',4)
-% pd1=makedist('Beta','a',6,'b',4)
-% pd1=makedist('Logistic','mu',8,'sigma',2.5)
-% pd1=makedist('Normal','mu',0.3,'sigma',1)
-% pd1 = makedist('Normal','mu',1,'sigma',1)
-% pd1=makedist('tLocationScale','mu',2,'sigmathi',5,'nu',10)
-pd1 = makedist("g_and_h","g",0.1,"h",0.4,'loc',1,'sca',1)
-% pd1 = makedist("g_and_h","g",0.1,"h",0.1,'loc',0,'sca',2)
 
 %%% Parameters for the sensor network
-T=20; M=50; snP=5; 
+T=20; snP=sn; 
 % each point observation zP is of size Mx1 with noise ~ N(0,snP^2I)
-
 
 %%% Lower/upper bound for optimization in Laplace Approximation,i.e. the range of W
 warpdist0="Normal";warpdist1="Normal";
@@ -90,6 +66,7 @@ LRT=WGPLRT_opt(H0,H1,warpinv,t,x_init, snP);
 ZP=SimFastPtData(hyp0,hyp1,C0,C1,mu0,mu1,warpfunc,t,snP,n0,n1);
 
 %% Plot ROC
+if figOpt==true
 N=2000;LogGamma=linspace(-500, 500,N)';
 TP=zeros(N,1);FP=zeros(N,1);
 
@@ -104,20 +81,19 @@ for j=1:N
         disp("Iteration="+j+",TP="+TP(j)+",FP="+FP(j));  
     end
 end
-
 plotROC(TP,FP)
+end
 
-save('TP.mat','TP')
-save('FP.mat','FP')
 %% Locating the LRT threshold
 
-alpha=0.10; % significance Level
 optLogGamma=WGPLRT_opt_gamma(LRT,hyp0,C0,mu0,warpfunc,t,snP,alpha);
-logGamma=optLogGamma % compute for n values with nhat observations in one batch
+logGamma=optLogGamma; % compute for n values with nhat observations in one batch
 
 yhat=WGPLRT_pred(ZP,LRT,logGamma);
 [tp,fp]=confusionMat(yn,yhat);
+if printOpt==true
 disp("At significance level="+alpha+", the optlogGamma="+logGamma+", tp="+tp+",fp="+fp);
+end
 
 
 
@@ -136,3 +112,7 @@ disp("At significance level="+alpha+", the optlogGamma="+logGamma+", tp="+tp+",f
 
 
 
+
+
+
+end

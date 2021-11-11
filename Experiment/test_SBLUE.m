@@ -11,7 +11,7 @@ pd=[];c=0;
 hyp=struct('mean',hyp.mean,'cov',hyp.cov,'dist',pd,'thres',c);
 % warpfunc=@(pd,p) invCdf(pd,p);
 warpfunc=@(c,x) indicator(c,x);
-
+rng("default")
 
 %% 1D data
 % N = 1000;
@@ -158,8 +158,16 @@ fprintf('GPR wo noise has MSE= %4.3f,with time= %4.3f\n',MSE_GPR,t_GPR);
 % In order to plot MSE graph to see the change of MSE over Rho
 % we may use Rho to control both true negative & true positive rate for A1,A2
 % Rho=linspace(0.01,1,100)'; 
-FPR=linspace(0.01,1,100)';k=10;beta=(1+exp(-k))/(1-exp(-k));alpha=2*beta;
-TPR=alpha./(1+exp(-k.*FPR))-beta;% create TPR/FPR vector
+% FPR=linspace(0.01,1,100)';k=10;beta=(1+exp(-k))/(1-exp(-k));alpha=2*beta;
+% TPR=alpha./(1+exp(-k.*FPR))-beta;% create TPR/FPR vector
+
+%%
+TP=load('TP.mat','TP');TPR=TP.TP;
+FP=load('FP.mat','FP');FPR=FP.FP;
+TPR=TPR(336:1500);
+FPR=FPR(336:1500);
+%%
+
 L=length(FPR);MSE=zeros(L,1);
 
 M=1000;
