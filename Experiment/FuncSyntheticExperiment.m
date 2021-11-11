@@ -1,4 +1,4 @@
-function F1_SBLUE=FuncSyntheticExperiment(M,sn,alpha,printOpt,figOpt)
+function [F1_SBLUE,TPR,FPR]=FuncSyntheticExperiment(M,sn,alpha,ratio,printOpt,figOpt)
 % Compute the F1 score given the varying parameters M, sn
 
 % Setup for Spatial Random field
@@ -22,7 +22,7 @@ pd1 = makedist("g_and_h","g",0.1,"h",0.4,'loc',1,'sca',1);
 
 %%% Parameters for the sensor network
 T=20;K=M;snP=sn;snI=sn;
-modelHyp=struct("T",T,"M",M,"K",K,"snI",snI,"snP",snP);
+modelHyp=struct("T",T,"M",M,"K",K,"snI",snI,"snP",snP,'ratio',ratio);
 
 %%% Lower/upper bound for optimization in Laplace Approximation,i.e. the range of W
 warpdist0="Normal";warpdist1="Normal";
@@ -158,6 +158,7 @@ transitionMat=SBLUE_confusion(A1,A2,liP,liI);
 SBLUE=SBLUE_stats(SBLUEprep,transitionMat,c); % calculate the SBLUE covariances 
 Ypred=SBLUE_pred(SBLUE,Ytrain_hat);           % predictions
 F1_SBLUE=F1score(Ytest,Ypred);
+[TPR,FPR]=confusionMat(Ytest,Ypred);
 t_SBLUE=toc;
 
 %% Evaluation

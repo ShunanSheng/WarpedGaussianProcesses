@@ -37,15 +37,25 @@ function Data=SimSynData(SP,H0,H1,warpfunc_sf, warpfunc, modelHyp)
     N=length(y); 
     
     % The index of training and test data
-%     indexTest=(1:5:N)';
     indexTest=randperm(N,floor(N/5))';
     indexTrain=setdiff(1:N,indexTest)';
     
     % The indexes of point sensors and integral sensors
-    xI=indexTrain(1:2:end);xI0=xI(y(xI)==0);
-    xI1=xI(y(xI)==1);nI0=length(xI0);nI1=length(xI1);NI=length(xI);
-    xP=setdiff(indexTrain,xI);xP0=xP(y(xP)==0);
-    xP1=xP(y(xP)==1);nP0=length(xP0);nP1=length(xP1);NP=length(xP);
+    
+    Ntrain=length(indexTrain);
+    xI=indexTrain(randperm(Ntrain,floor(Ntrain*modelHyp.ratio)));
+    xI0=xI(y(xI)==0);
+    xI1=xI(y(xI)==1);
+    nI0=length(xI0);
+    nI1=length(xI1);
+    NI=length(xI);
+    
+    xP=setdiff(indexTrain,xI);
+    xP0=xP(y(xP)==0);
+    xP1=xP(y(xP)==1);
+    nP0=length(xP0);
+    nP1=length(xP1);
+    NP=length(xP);
     
     
     % without loss of generality we may assume M=K in practice

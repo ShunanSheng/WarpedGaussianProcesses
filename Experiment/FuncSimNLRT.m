@@ -38,7 +38,6 @@ warpinv=@(pd,p) invCdfWarp(pd,p);
 
 %% NLRT
 tic
-clc;
 nI=10000;n0=nI*0.5;n1=nI-n0;
 yn=[zeros(n0,1);ones(n1,1)]; % ground truth, the value of latent field, 
 % half the null hypothesis and half the alternative hypothesis
@@ -56,7 +55,6 @@ mu1 = meanfunc1( hyp1.mean, x);
 ZI=SimFastIntData(hyp0,hyp1,C0,C1,mu0,mu1,warpfunc,K,kw,snI,n0,n1);
 
 %% NLRT ROC curve constants
-clc;
 sumstats=@(z) summaryAuto(z,4); % the summary statistic
 
 d=@distEuclid; % distance metric
@@ -66,7 +64,6 @@ J=10000; % number of samples per hypothesis
                                                                    % and alternative hypothesis
 
 %% Plot ROC
-clc;
 N=1000;M=10;LogGamma=linspace(-1000,1000,N);Delta=linspace(0,1,M);% distance tolerance
 TP=zeros(N,M);FP=zeros(N,M);
 [D0,D1]=NLRT_stats(ZI,ZI0,ZI1,sumstats,d); % compute the distance matrix

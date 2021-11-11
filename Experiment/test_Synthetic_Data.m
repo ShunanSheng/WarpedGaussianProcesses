@@ -33,8 +33,8 @@ pd1 = makedist("g_and_h","g",0.1,"h",0.4,'loc',1,'sca',1)
 
 
 %%% Parameters for the sensor network
-T=20; M=50; K=50; snP=0.1; snI=0.1;
-modelHyp=struct("T",T,"M",M,"K",K,"snI",snI,"snP",snP);
+T=20; M=50; K=50; snP=0.1; snI=0.1;ratio=0.5;
+modelHyp=struct("T",T,"M",M,"K",K,"snI",snI,"snP",snP,'ratio',ratio);
 
 %%% Lower/upper bound for optimization in Laplace Approximation,i.e. the range of W
 warpdist0="Normal";warpdist1="Normal";

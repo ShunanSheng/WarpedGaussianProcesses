@@ -1,3 +1,21 @@
+clc
+pd = makedist("g_and_h","g",0.1,"h",0.4,'loc',1,'sca',1);
+sum1=0;
+sum2=pd.mean.^2+pd.var
+M=200;
+for i=1:M
+N=10000000;
+z=randn(N,1);
+x=g_and_h(z, pd.g, pd.h, pd.loc, pd.sca);
+sum1=sum1+sum(x.^2)/N;
+end
+sum1/M
+
+
+
+
+%%
+
 
 
 
