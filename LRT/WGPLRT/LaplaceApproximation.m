@@ -20,11 +20,12 @@ function [Qval,vhat,A]=LaplaceApproximation(pd,Kinv,warpinv,x0,lb,ub)
     Qneg=@(x) -Q(x);
     
     if isempty(lb) && isempty(ub)
-        options=optimoptions('fminunc','Display','iter');
+        options=optimoptions('fminunc','Display','off');
         [vhat,Qnval] = fminunc(Qneg,x0,options);
     else
         % Use Interior point to find the mode and maximum value of Q
-        [vhat,Qnval]=InteriorPoint(Qneg,x0,lb,ub);
+        options = optimoptions('fmincon','Display','off','Algorithm','sqp');
+        [vhat,Qnval]=InteriorPoint(Qneg,x0,lb,ub,options);
     end 
     Qval=-Qnval;
     A=-hessianQ(pd,Kinv,G,vhat); % negative hessian or hessian

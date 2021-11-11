@@ -1,39 +1,27 @@
-clear all,close all,clc
-% Create a synthetic dataset and evaluate the performance on the dataset
-% Create the synthetic dataset
+function F1_SBLUE=FuncSyntheticExperiment(M,sn,alpha,printOpt,figOpt)
+% Compute the F1 score given the varying parameters M, sn
+
 % Setup for Spatial Random field
 meanfunc = @meanConst; 
 covfunc = {@covSEiso}; ell = 1/2; sf = 1; hyp.cov=log([ell; sf]); 
-c=0;pd=[];% that is q=0.5 and pd=makedist("Binomial",'N',1,'p',q); % Bernouli(p)
+c=0;pd=[];% that is q=0.5
 hyp=struct('mean',0,'cov',hyp.cov,'dist',pd,'thres',c);
 
 
 %%% H0 Null hypothesis
 meanfunc0 = @meanConst; 
-% covfunc0 = {@covSEiso}; ell0 =1/2; sf0 = 1; hyp0.cov=log([ell0; sf0]);
 covfunc0 = {@covMaterniso, 1}; ell1=1; sf1=1; hyp0.cov=log([ell1; sf1]);
-% pd0=makedist('Normal','mu',2,'sigma',4)
-% pd0=makedist('Normal','mu',0,'sigma',1);
-% pd0=makedist('Gamma','a',2,'b',4);
-% pd0 = makedist("g_and_h","g",0.1,"h",0.1,'loc',1,'sca',1)
-pd0 = makedist("g_and_h","g",0.1,"h",0.4,'loc',1,'sca',1)
+pd0 = makedist("g_and_h","g",0.1,"h",0.4,'loc',1,'sca',1);
 
 %%% H1 Alternative hypothesis
 
 meanfunc1 = @meanConst; 
-% covfunc1 = {@covSEiso}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
 covfunc1 = {@covMaterniso, 5}; ell1=1; sf1=1; hyp1.cov=log([ell1; sf1]);
-% covfunc1 = {@covMaterniso, 3}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
-% pd1=makedist('Gamma','a',1,'b',1)
-% pd1=makedist('Beta','a',1,'b',1)
-% pd1=makedist('Normal','mu',0,'sigma',1)
-% pd1=makedist('Logistic','mu',2,'sigma',5)
-% pd1 = makedist("g_and_h","g",0.1,"h",0.1,'loc',0,'sca',1)
-pd1 = makedist("g_and_h","g",0.1,"h",0.4,'loc',1,'sca',1)
+pd1 = makedist("g_and_h","g",0.1,"h",0.4,'loc',1,'sca',1);
 
 
 %%% Parameters for the sensor network
-T=20; M=50; K=50; snP=0.1; snI=0.1;
+T=20;K=M;snP=sn;snI=sn;
 modelHyp=struct("T",T,"M",M,"K",K,"snI",snI,"snP",snP);
 
 %%% Lower/upper bound for optimization in Laplace Approximation,i.e. the range of W
@@ -71,19 +59,23 @@ Ytrain=y(indexTrain);
 Ytest=y(indexTest);
 
 %% Offline Phase
+if printOpt==true
 disp("Offline phase!")
+end
 %% Offline: WGPLRT
-disp("Offline: WGPLRT")
+% disp("Offline: WGPLRT")
 t=Data.t;ZP0=Data.ZP.H0;ZP1=Data.ZP.H1;xP0=Data.xP.H0;xP1=Data.xP.H1;
 
 % run Laplace approximation
 x_init=[ones(M,1)*0.5, ones(M,1)*0.5]; 
 LRT=WGPLRT_opt(H0,H1,warpinv,t,x_init, snP);
-logGammaP=203.5655; %logGammaP at significance level alpha=0.1 from simulation
+
+[wtp,wfp,logGammaP]=FuncSimWGPLRT(M,sn,alpha,false,false);
+% logGammaP=203.5655; %logGammaP at significance level alpha=0.1 from simulation
 
 
 %% Offline: NLRT
-disp("Offline: NLRT")
+% disp("Offline: NLRT")
 % The Integral Observations
 ZI0=Data.ZI.H0;
 ZI1=Data.ZI.H1;
@@ -107,20 +99,25 @@ J=100000; % number of generated samples per hypothesis
 
 % Parameters for NLRT
 delta=0.1; % distance tolerance
-logGammaI=-0.5182; %logGammaI at significance level alpha=0.1 from simulation
+[ntp,nfp,logGammaI]=FuncSimNLRT(M,sn,alpha,false,false);
+% logGammaI=-0.5182; %logGammaI at significance level alpha=0.1 from simulation
 
 
 %% Offline: SBLUE
-disp("Offline: SBLUE")
+% disp("Offline: SBLUE")
 SBLUEprep=SBLUE_stats_prep(covfunc,meanfunc,hyp,Xtrain,Xtest); 
+if printOpt==true
 disp("Offline phase finished!")
+end
 
 %% Online phase
+if printOpt==true
 disp("Online Phase")
+end
 Yhat=zeros(length(y),1);   % the vector to store the decisions from LRTs
 
 %% Online: WGPLRT
-disp("Online: WGPLRT")
+% disp("Online: WGPLRT")
 % LRT for ZP0 and ZP1
 yhat_pt_0=WGPLRT_pred(ZP0,LRT,logGammaP); % the classification
 yhat_pt_1=WGPLRT_pred(ZP1,LRT,logGammaP);% the classification
@@ -129,7 +126,7 @@ yhat_pt_1=WGPLRT_pred(ZP1,LRT,logGammaP);% the classification
 Yhat(xP0)=yhat_pt_0;
 Yhat(xP1)=yhat_pt_1;
 %% Online: NLRT
-disp("Online: NLRT")
+% disp("Online: NLRT")
 % NLRT for Z0
 [D00,D01]=NLRT_stats(ZI0,Z0,Z1,sumstats,d); % compute the distance matrix
 Lambda0=NLRT_pred_delta(D00,D01,delta);
@@ -147,38 +144,24 @@ Yhat(xI1)=yhat_int_1;
 Ytrain_hat=Yhat(indexTrain);
 
 %% Online: SBLUE
-disp("Online: SBLUE")
+% disp("Online: SBLUE")
 % the false postive rates and true postive rates are
 % computed via simulation in test_WGPLRT.m and test_NLRT.m
 tic
 liP=ismember(indexTrain,[xP0;xP1]);        % the locations of the point observations (using WGPLRT)
 liI=ismember(indexTrain,[xI0;xI1]);        % the locations of the integral observations (using NLRT)
-rho=[0.9022,0.8972];lambda=[0.833,0.8534]; % rho indicates the 1-FPR of WGPLRT & NLRT; lambda indicates TPR of WGPLRT & NLRT 
+rho=[1-wfp,1-nfp];lambda=[wtp,ntp]; % rho indicates the 1-FPR of WGPLRT & NLRT; lambda indicates TPR of WGPLRT & NLRT 
 A1=[rho(1),1-rho(1);1-lambda(1),lambda(1)];% transition matrix (WGPLRT)
 A2=[rho(2),1-rho(2);1-lambda(2),lambda(2)];% transition matrix (NLRT)
 
 transitionMat=SBLUE_confusion(A1,A2,liP,liI);
 SBLUE=SBLUE_stats(SBLUEprep,transitionMat,c); % calculate the SBLUE covariances 
 Ypred=SBLUE_pred(SBLUE,Ytrain_hat);           % predictions
-% MSE_SBLUE=sum((Ytest-Ypred).^2)/length(Ypred);
 F1_SBLUE=F1score(Ytest,Ypred);
 t_SBLUE=toc;
 
-
-%% KNN 
-% use Elbow method to determine the optimal number of clusters
-tic;
-rng(1)
-% Mdl = fitcknn(Xtrain,Ytrain_hat,'OptimizeHyperparameters','auto',...
-%     'HyperparameterOptimizationOptions',...
-%     struct('AcquisitionFunctionName','expected-improvement-plus',"ShowPlots",false));
-
-Mdl = fitcknn(Xtrain,Ytrain_hat,'Distance','seuclidean','NumNeighbors',7);
-[Ypred,score,cost] = predict(Mdl,Xtest);
-F1_KNN=F1score(Ytest,Ypred);
-% MSE_KNN=sum((Ypred-Ytest).^2)/length(Ypred);
-t_KNN=toc;
 %% Evaluation
+if printOpt==true
 clc
 % Overall, training loss
 [tp,fp]=confusionMat(Ytrain,Ytrain_hat);
@@ -196,38 +179,39 @@ YI=[y(xI0);y(xI1)];
 fprintf("Overall :TPR= %4.3f, FPR=%4.3f, MSE=%4.3f\n",tp, fp, sum((Ytrain-Ytrain_hat).^2)/length(Ytrain));
 fprintf("WGPLRT :TPR= %4.3f, FPR=%4.3f, MSE=%4.3f\n",wtp, wfp, sum((YP-YP_hat).^2)/length(YP));
 fprintf("NLRT :TPR= %4.3f, FPR=%4.3f, MSE=%4.3f\n",ntp, nfp, sum((YI-YI_hat).^2)/length(YI));
-fprintf('SBLUE w noise has F1 score= %4.3f with time= %4.3f\n',F1_SBLUE,t_SBLUE);
-fprintf('KNN w noise has F1 score= %4.3f with time= %4.3f\n',F1_KNN,t_KNN);
-
+fprintf('SBLUE w noise has F1 score=%4.3f with time= %4.3f\n',F1_SBLUE,t_SBLUE);
+% fprintf('KNN w noise has F1 score= %4.3f with time= %4.3f\n',F1_KNN,t_KNN);
+end
 %% Plot the graph
-close all 
-% Plot the latent field
-X=reshape(x(:,1),[50,50]);
-Y=reshape(x(:,2),[50,50]);
-Z=double(reshape(y,[50,50]));
-figure()
-surf(X,Y,Z,"DisplayName","latent binary field");
-shading interp
-view(2)
-colorbar
-hold on
-plot3(Xtest(:,1),Xtest(:,2),Ytest, ['x','r'],'DisplayName','un-monitored location');
-legend()
-hold off
-title('True Latent Binary Spatial Field')
+if figOpt==true
+    close all 
+    % Plot the latent field
+    X=reshape(x(:,1),[50,50]);
+    Y=reshape(x(:,2),[50,50]);
+    Z=double(reshape(y,[50,50]));
+    figure()
+    surf(X,Y,Z,"DisplayName","latent binary field");
+    shading interp
+    view(2)
+    colorbar
+    hold on
+    plot3(Xtest(:,1),Xtest(:,2),Ytest, ['x','r'],'DisplayName','un-monitored location');
+    legend()
+    hold off
+    title('True Latent Binary Spatial Field')
 
-% Plot the prediction
-Yhat(indexTest)=Ypred;
-Zhat=double(reshape(Yhat,[50,50]));
-figure()
-surf(X,Y,Zhat,"DisplayName","latent binary field");
-shading interp
-view(2)
-colorbar
-hold on
-plot3(Xtest(:,1),Xtest(:,2),Ypred, ['x','r'],'DisplayName','un-monitored location');
-legend()
-title("The Reconstructed Binary Spatial Field")
+    % Plot the prediction
+    Yhat(indexTest)=Ypred;
+    Zhat=double(reshape(Yhat,[50,50]));
+    figure()
+    surf(X,Y,Zhat,"DisplayName","latent binary field");
+    shading interp
+    view(2)
+    colorbar
+    hold on
+    plot3(Xtest(:,1),Xtest(:,2),Ypred, ['x','r'],'DisplayName','un-monitored location');
+    legend()
+    title("The Reconstructed Binary Spatial Field")
+end
 
-
-
+end
