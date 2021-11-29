@@ -9,7 +9,7 @@ clear all,clc,close all;
 %%% H0 Null hypothesis
 meanfunc0 = @meanConst; 
 % covfunc0 = {@covSEiso}; ell0 =1/2; sf0 = 1; hyp0.cov=log([ell0; sf0]);
-covfunc0 = {@covMaterniso, 1}; ell1=1; sf1=1; hyp0.cov=log([ell1; sf1]);
+covfunc0 = {@covMaterniso, 1}; ell0=1; sf0=1; hyp0.cov=log([ell0; sf0]);
 % covfunc0={@covFBM};sf0=1;h0=1/2;hyp0.cov=[log(sf0);-log(1/h0-1)];
 
 % pd0=makedist('Normal','mu',1,'sigma',1.2910)

@@ -1,3 +1,45 @@
+
+
+
+
+
+%%
+clc, clear all;
+f = @ (x) x.^(1/4);
+integral(f, 0, 1)
+
+FP = [linspace(0, 0.5, 400),linspace(0.5, 1, 250)];
+TP = f(FP);
+auc= AUC(FP,TP)
+
+%%
+clc,clear all;
+figure1=openfig('AUCvaryingK0.1.fig');
+figure2=openfig('AUCvaryingK0.01.fig');
+L = findobj(figure1,'type','line');
+% a2=copyobj(L,findobj(figure2,'type','axes'));
+
+
+%%
+clc,clear all;
+figure1=openfig('AUC_NRLT_SNR.fig');
+figure2=openfig('AUC_WGPLRT_SNR.fig');
+L = findobj(figure1,'type','line');
+a2=copyobj(L,findobj(figure2,'type','axes'));
+
+
+%%
+fig=openfig('AUCvaryingK0.1.fig');
+axObjs = fig.Children;
+dataObjs = axObjs.Children;
+y = dataObjs(1).YData;
+x = dataObjs(1).XData;
+x(y==max(y))
+
+% copyobj(L,findobj(figure3,'type','axes'))
+
+
+%%
 clc
 pd = makedist("g_and_h","g",0.1,"h",0.4,'loc',1,'sca',1);
 sum1=0;
@@ -10,13 +52,6 @@ x=g_and_h(z, pd.g, pd.h, pd.loc, pd.sca);
 sum1=sum1+sum(x.^2)/N;
 end
 sum1/M
-
-
-
-
-%%
-
-
 
 
 %%

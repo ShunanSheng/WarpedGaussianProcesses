@@ -1,6 +1,13 @@
-function [tp,fp,optLogGamma]=FuncSimWGPLRT(M,sn,alpha,printOpt,figOpt)
-% Given the input of signal variance and number of points, output the
-% corresponding tp, fp and optimal threshold
+function [TP, FP] = FuncWGPLRTroc(M, sn, printOpt, figOpt)
+%%% Compute the TP, FP of NLRT to plot ROC given the parameters
+%   Input:
+%           M - then number of integral observations
+%           sn - the signal noise
+%           printOpt - logical variable controling printing status
+%           figOpt - logical variable controlling plotting status
+%   Output:
+%           TP - the true positive rates
+%           FP - the false positive rates
 
 %%% Initialize Temporal processes
 %%% H0 Null hypothesis
@@ -16,8 +23,7 @@ pd1 = makedist("g_and_h","g",0.1,"h",0.4,'loc',1,'sca',1);
 
 
 %%% Parameters for the sensor network
-T=20; snP=sn; 
-% each point observation zP is of size Mx1 with noise ~ N(0,snP^2I)
+T=20; snP=sn; % each point observation zP is of size Mx1 with noise ~ N(0,snP^2I)
 
 %%% Lower/upper bound for optimization in Laplace Approximation,i.e. the range of W
 warpdist0="Normal";warpdist1="Normal";
@@ -29,8 +35,8 @@ warpdist0="Normal";warpdist1="Normal";
 
 
 % For distribution without full support, we require the density around
-% boundary to be near zero;
-% Approximation to be accurate when the tail probability decays fast enough
+% boundary to be near zero. Approximation to be accurate when the tail 
+% probability decays fast enough
 
 hyp0=struct('mean',0,'cov',hyp0.cov,'dist',pd0,'t',T,'lb',lb0,'ub',ub0);
 hyp1=struct('mean',0,'cov',hyp1.cov,'dist',pd1,'t',T,'lb',lb1,'ub',ub1);
@@ -65,55 +71,26 @@ LRT=WGPLRT_opt(H0,H1,warpinv,t,x_init, snP);
 ZP=SimFastPtData(hyp0,hyp1,C0,C1,mu0,mu1,warpfunc,t,snP,n0,n1);
 
 %% Plot ROC
-if figOpt==true
-    N=2000;LogGamma=linspace(-500, 500,N)';
-    TP=zeros(N,1);FP=zeros(N,1);
+N=1000;LogGamma=linspace(-100, 4000,N)';
+TP=zeros(N,1);FP=zeros(N,1);
 
-    for j=1:N
-        logGamma=LogGamma(j); % the threshold
-        yhat=WGPLRT_pred(ZP,LRT,logGamma); % the classification
-        % compute the false/true positive rate
-        [tp,fp]=confusionMat(yn,yhat);
-        TP(j)=tp;
-        FP(j)=fp;
-        if printOpt == true
-            if mod(j,100)==0
-                disp("Iteration="+j+",TP="+TP(j)+",FP="+FP(j));  
-            end
+for j=1:N
+    logGamma=LogGamma(j); % the threshold
+    yhat=WGPLRT_pred(ZP,LRT,logGamma); % the classification
+    % compute the false/true positive rate
+    [tp,fp]=confusionMat(yn,yhat);
+    TP(j)=tp;
+    FP(j)=fp;
+    if printOpt == true
+        if mod(j,200)==0
+            disp("Iteration="+j+",TP="+TP(j)+",FP="+FP(j));  
         end
     end
+end
+
+if figOpt == true
     plotROC(TP,FP)
 end
-
-%% Locating the LRT threshold
-
-optLogGamma=WGPLRT_opt_gamma(LRT,hyp0,C0,mu0,warpfunc,t,snP,alpha);
-logGamma=optLogGamma; % compute for n values with nhat observations in one batch
-
-yhat=WGPLRT_pred(ZP,LRT,logGamma);
-[tp,fp]=confusionMat(yn,yhat);
-if printOpt==true
-disp("At significance level="+alpha+", the optlogGamma="+logGamma+", tp="+tp+",fp="+fp);
-end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 end

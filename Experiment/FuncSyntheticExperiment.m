@@ -25,7 +25,8 @@ T=20;K=M;snP=sn;snI=sn;
 modelHyp=struct("T",T,"M",M,"K",K,"snI",snI,"snP",snP,'ratio',ratio);
 
 %%% Lower/upper bound for optimization in Laplace Approximation,i.e. the range of W
-warpdist0="Normal";warpdist1="Normal";
+warpdist0 = "Normal";
+warpdist1 = "Normal";
 
 [lb0,ub0]=lowUpBound(warpdist0,M);
 [lb1,ub1]=lowUpBound(warpdist1,M);
@@ -150,7 +151,7 @@ Ytrain_hat=Yhat(indexTrain);
 tic
 liP=ismember(indexTrain,[xP0;xP1]);        % the locations of the point observations (using WGPLRT)
 liI=ismember(indexTrain,[xI0;xI1]);        % the locations of the integral observations (using NLRT)
-rho=[1-wfp,1-nfp];lambda=[wtp,ntp]; % rho indicates the 1-FPR of WGPLRT & NLRT; lambda indicates TPR of WGPLRT & NLRT 
+rho=[1-wfp,1-nfp];lambda=[wtp,ntp];        % rho indicates the 1-FPR of WGPLRT & NLRT; lambda indicates TPR of WGPLRT & NLRT 
 A1=[rho(1),1-rho(1);1-lambda(1),lambda(1)];% transition matrix (WGPLRT)
 A2=[rho(2),1-rho(2);1-lambda(2),lambda(2)];% transition matrix (NLRT)
 
