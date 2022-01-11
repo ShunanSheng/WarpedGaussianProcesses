@@ -9,44 +9,51 @@ clear all,clc,close all;
 %%% H0 Null hypothesis
 meanfunc0 = @meanConst; 
 % covfunc0 = {@covSEiso}; ell0 =1/2; sf0 = 1; hyp0.cov=log([ell0; sf0]);
-covfunc0 = {@covMaterniso, 1}; ell0=1; sf0=1; hyp0.cov=log([ell0; sf0]);
+covfunc0 = {@covMaterniso, 3}; ell0= exp(-0.313); sf0=1; hyp0.cov=log([ell0; sf0]);
 % covfunc0={@covFBM};sf0=1;h0=1/2;hyp0.cov=[log(sf0);-log(1/h0-1)];
 
 % pd0=makedist('Normal','mu',1,'sigma',1.2910)
 % pd0=makedist('Normal','mu',2,'sigma',4)
 % pd0=makedist('Gamma','a',4,'b',2)
+pd0=makedist('Gamma','a',27.0511,'b',0.272155)
+% pd0=makedist('Gamma','a',243.441,'b',0.111978)
 % pd0=makedist('Logistic','mu',8,'sigma',2)
-% pd0=makedist('Beta','a',4,'b',6)
+% pd0=makedist('Beta','a',11.6227,'b',3.07201)
 % pd0 = makedist('Stable','alpha',0.5,'beta',0.8,'gam',1,'delta',0)
 % pd0 = makedist('tLocationScale','mu',2,'sigma',5,'nu',3) % nv should be bigger than 2
 % pd0 = makedist("g_and_h","g",0.1,"h",0.1,'loc',0,'sca',1)
-pd0 = makedist("g_and_h","g",0.1,"h",0.4,'loc',1,'sca',1)
+% pd0 = makedist("g_and_h","g",0.1,"h",0.4,'loc',1,'sca',1)
 
 
 
 %%% H1 Alternative hypothesis
 meanfunc1 = @meanConst; 
 % covfunc1 = {@covSEiso}; ell1=1/2; sf1=1; hyp1.cov=log([ell1; sf1]);
-covfunc1 = {@covMaterniso, 5}; ell1=1; sf1=1; hyp1.cov=log([ell1; sf1]);
+% covfunc1 = {@covMaterniso, 5}; ell1=1; sf1=1; hyp1.cov=log([ell1; sf1]);
+covfunc1 = {@covMaterniso, 3}; ell1= exp(-0.287); sf1=1; hyp1.cov=log([ell1; sf1]);
 
-% pd1=makedist('Gamma','a',2,'b',4)
-% pd1=makedist('Beta','a',6,'b',4)
+
+% pd1=makedist('Gamma','a',188.569,'b',0.149124)
+pd1=makedist('Gamma','a',20.3009,'b',0.418466)
+% pd1=makedist('Beta','a',14.2053,'b',4.17109)
 % pd1=makedist('Logistic','mu',8,'sigma',2.5)
 % pd1=makedist('Normal','mu',0.3,'sigma',1)
 % pd1 = makedist('Normal','mu',1,'sigma',1)
 % pd1=makedist('tLocationScale','mu',2,'sigmathi',5,'nu',10)
-pd1 = makedist("g_and_h","g",0.1,"h",0.4,'loc',1,'sca',1)
+% pd1 = makedist("g_and_h","g",0.1,"h",0.4,'loc',1,'sca',1)
 % pd1 = makedist("g_and_h","g",0.1,"h",0.1,'loc',0,'sca',2)
 
 %%% Parameters for the sensor network
-T=20; M=50; snP=5; 
+T=20; M=50; snP=0.1; 
 % each point observation zP is of size Mx1 with noise ~ N(0,snP^2I)
 
 
 %%% Lower/upper bound for optimization in Laplace Approximation,i.e. the range of W
-warpdist0="Normal";warpdist1="Normal";
-% warpdist0="Gamma";warpdist1="Gamma";
+% warpdist0="Normal";warpdist1="Normal";
+warpdist0="Gamma";warpdist1="Gamma";
 % warpdist0="Normal";warpdist1="Gamma";
+% warpdist0="Beta";warpdist1="Beta";
+
 
 [lb0,ub0]=lowUpBound(warpdist0,M);
 [lb1,ub1]=lowUpBound(warpdist1,M);
@@ -83,7 +90,7 @@ mu1 = meanfunc1( hyp1.mean, t);
 
 % run Laplace approximation
 
-x_init=[ones(M,1)*pd0.mean+3, ones(M,1)*pd1.mean]; 
+x_init=[ones(M,1)*pd0.mean, ones(M,1)*pd1.mean]; 
 LRT=WGPLRT_opt(H0,H1,warpinv,t,x_init, snP);
 
 % generate samples

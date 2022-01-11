@@ -152,9 +152,6 @@ fprintf('KNN w0 noise has MSE= %4.3f,with time= %4.3f\n',MSE_KNN,t_KNN);
 fprintf('GPR wo noise has MSE= %4.3f,with time= %4.3f\n',MSE_GPR,t_GPR);
 
 
-
-%%
-
 % In order to plot MSE graph to see the change of MSE over Rho
 % we may use Rho to control both true negative & true positive rate for A1,A2
 % Rho=linspace(0.01,1,100)'; 
