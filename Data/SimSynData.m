@@ -20,15 +20,9 @@ function Data=SimSynData(SP,H0,H1,warpfunc_sf, warpfunc, modelHyp)
     % Binary spatial field GP(0,C)
     rng("default")
     meanfunc = SP.meanfunc; 
-    covfunc = {SP.covfunc};
-    hyp=SP.hyp;
-
-    % Location of sensors 
-    n = 50; xinf=-5; xsup=5;
-    [X,Y]= meshgrid(linspace(xinf,xsup,n),linspace(xinf,xsup,n));
-    xSp=reshape(X,[],1);
-    ySp=reshape(Y,[],1); 
-    x=[xSp,ySp];
+    covfunc = SP.covfunc;
+    hyp = SP.hyp;
+    x = SP.loc;
     
     % Generate the lantent binary spatial field
     y=SimWGP(hyp,meanfunc,covfunc,warpfunc_sf,x);
@@ -48,26 +42,24 @@ function Data=SimSynData(SP,H0,H1,warpfunc_sf, warpfunc, modelHyp)
     xI1=xI(y(xI)==1);
     nI0=length(xI0);
     nI1=length(xI1);
-    NI=length(xI);
     
     xP=setdiff(indexTrain,xI);
     xP0=xP(y(xP)==0);
     xP1=xP(y(xP)==1);
     nP0=length(xP0);
     nP1=length(xP1);
-    NP=length(xP);
     
     
-    % without loss of generality we may assume M=K in practice
+    % Set up the parameters
     T=modelHyp.T;M=modelHyp.M; K=modelHyp.K; snI=modelHyp.snI; snP=modelHyp.snP;
 
     % Hypotheses for Temproal Process
     meanfunc0 = H0.meanfunc; 
-    covfunc0 = {H0.covfunc};
+    covfunc0 = H0.covfunc;
     hyp0=H0.hyp;
 
     meanfunc1 = H1.meanfunc; 
-    covfunc1 = {H1.covfunc};
+    covfunc1 = H1.covfunc;
     hyp1=H1.hyp;
     
 
@@ -92,8 +84,8 @@ function Data=SimSynData(SP,H0,H1,warpfunc_sf, warpfunc, modelHyp)
     CI1 = chol(feval(covfunc1{:}, hyp1.cov, tI)+1e-9*eye(n));
     muI1 = meanfunc1( hyp1.mean, tI);
     
-    ZI0=SimIntData(hyp0,CI0,muI0, warpfunc,K,kw,snI,nI0);
-    ZI1=SimIntData(hyp1,CI1,muI1, warpfunc,K,kw,snI,nI1);
+    ZI0 = SimIntData(hyp0,CI0,muI0, warpfunc,K,kw,snI,nI0);
+    ZI1 = SimIntData(hyp1,CI1,muI1, warpfunc,K,kw,snI,nI1);
     
     % Create Data structure
     Data.ZP.H0=ZP0;

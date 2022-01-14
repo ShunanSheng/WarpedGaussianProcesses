@@ -44,7 +44,10 @@ pd1=makedist('Gamma','a',20.3009,'b',0.418466)
 % pd1 = makedist("g_and_h","g",0.1,"h",0.1,'loc',0,'sca',2)
 
 %%% Parameters for the sensor network
-T=20; M=50; snP=0.1; 
+% T=20; M=50; snP=0.1; 
+T = 19 * 7;
+M = 19* 7;
+snP = 0.1;
 % each point observation zP is of size Mx1 with noise ~ N(0,snP^2I)
 
 
@@ -66,8 +69,8 @@ warpdist0="Gamma";warpdist1="Gamma";
 hyp0=struct('mean',0,'cov',hyp0.cov,'dist',pd0,'t',T,'lb',lb0,'ub',ub0);
 hyp1=struct('mean',0,'cov',hyp1.cov,'dist',pd1,'t',T,'lb',lb1,'ub',ub1);
 
-H0=struct("meanfunc",meanfunc0,"covfunc",covfunc0,"hyp",hyp0);
-H1=struct("meanfunc",meanfunc1,"covfunc",covfunc1,"hyp",hyp1);
+H0=struct("meanfunc",meanfunc0,"covfunc",{covfunc0},"hyp",hyp0);
+H1=struct("meanfunc",meanfunc1,"covfunc",{covfunc1},"hyp",hyp1);
 
 %%% warping function
 warpfunc=@(pd,p) invCdf(pd,p);
@@ -114,8 +117,8 @@ end
 
 plotROC(TP,FP)
 
-save('TP.mat','TP')
-save('FP.mat','FP')
+% save('TP.mat','TP')
+% save('FP.mat','FP')
 %% Locating the LRT threshold
 
 alpha=0.10; % significance Level

@@ -42,21 +42,28 @@ warpdist0="Normal";warpdist1="Normal";
 [lb0,ub0]=lowUpBound(warpdist0,M);
 [lb1,ub1]=lowUpBound(warpdist1,M);
 
+%%% Location of sensors 
+n = 50; xinf=-5; xsup=5;
+[X,Y]= meshgrid(linspace(xinf,xsup,n),linspace(xinf,xsup,n));
+xSp=reshape(X,[],1);
+ySp=reshape(Y,[],1); 
+loc=[xSp,ySp];
+
 %%% Create structures to store the hyperparameters
-SP=struct("meanfunc",meanfunc,"covfunc",covfunc,"hyp",hyp);
+SP=struct("meanfunc",meanfunc,"covfunc",{covfunc},"hyp",hyp, "loc", loc);
 hyp0=struct('mean',0,'cov',hyp0.cov,'dist',pd0,'t',T,'lb',lb0,'ub',ub0);
 hyp1=struct('mean',0,'cov',hyp1.cov,'dist',pd1,'t',T,'lb',lb1,'ub',ub1);
 
-H0=struct("meanfunc",meanfunc0,"covfunc",covfunc0,"hyp",hyp0);
-H1=struct("meanfunc",meanfunc1,"covfunc",covfunc1,"hyp",hyp1);
+H0=struct("meanfunc",meanfunc0,"covfunc",{covfunc0},"hyp",hyp0);
+H1=struct("meanfunc",meanfunc1,"covfunc",{covfunc1},"hyp",hyp1);
 
 %%% Warping function
 warpfunc=@(pd,p) invCdf(pd,p);
 warpinv=@(pd,p) invCdfWarp(pd,p);
-warpfunc_sf=@(c,x) indicator(c,x); % the warping function of the binary spatial field is the indicator function
+warpfunc_sp=@(c,x) indicator(c,x); % the warping function of the binary spatial field is the indicator function
 
 %%% Generate synthetic data
-Data=SimSynData(SP,H0,H1,warpfunc_sf, warpfunc, modelHyp);
+Data=SimSynData(SP,H0,H1,warpfunc_sp, warpfunc, modelHyp);
 
 %%% Extract information from Data, e.g. sensor locations, latent labels
 x=Data.x;
@@ -80,7 +87,6 @@ t=Data.t;ZP0=Data.ZP.H0;ZP1=Data.ZP.H1;xP0=Data.xP.H0;xP1=Data.xP.H1;
 x_init=[ones(M,1)*0.5, ones(M,1)*0.5]; 
 LRT=WGPLRT_opt(H0,H1,warpinv,t,x_init, snP);
 logGammaP=203.5655; %logGammaP at significance level alpha=0.1 from simulation
-
 
 %% Offline: NLRT
 disp("Offline: NLRT")
@@ -106,8 +112,8 @@ J=100000; % number of generated samples per hypothesis
 [Z0,Z1]=NLRT_gene(hyp0,CI0,muI0,hyp1,CI1,muI1, warpfunc,K,kw,snI,J); 
 
 % Parameters for NLRT
-delta=0.1; % distance tolerance
-logGammaI=-0.5182; %logGammaI at significance level alpha=0.1 from simulation
+delta = 0.1; % distance tolerance
+logGammaI = -0.5182; %logGammaI at significance level alpha=0.1 from simulation
 
 
 %% Offline: SBLUE
@@ -163,6 +169,7 @@ Ypred=SBLUE_pred(SBLUE,Ytrain_hat);           % predictions
 % MSE_SBLUE=sum((Ytest-Ypred).^2)/length(Ypred);
 F1_SBLUE=F1score(Ytest,Ypred);
 t_SBLUE=toc;
+
 
 
 %% KNN 

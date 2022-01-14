@@ -1,11 +1,11 @@
 %%% Test of SBLUE on 1D and 2D simulated data
 clear all;close all;clc;
-
 % Set up the spatial fied
 meanfunc = @meanConst;hyp.mean=0;
 % covfunc = {@covSEiso}; ell = 1/2; sf = 1; hyp.cov=log([ell; sf]);
 % covfunc={@covFBM};sf0=1;h0=1/2;hyp.cov=[log(sf0);-log(1/h0-1)];
-covfunc = {@covMaterniso, 3}; ell1=2; sf1=1; hyp.cov=log([ell1; sf1]);
+% covfunc = {@covMaterniso, 3}; ell=2; sf=1; hyp.cov=log([ell; sf]);
+covfunc = {@covMaterniso, 3}; ell=-3.1003; sf=1.8084; hyp.cov=log([ell; sf]);
 % q=0.5;pd=makedist("Binomial",'N',1,'p',q); % Bernouli(p)
 pd=[];c=0;
 hyp=struct('mean',hyp.mean,'cov',hyp.cov,'dist',pd,'thres',c);

@@ -59,10 +59,19 @@ Temperature_heavy_new = processTemp(Temperature_heavy_max);
 
 %% fit the temporal gaussian process and the warping distribution
 distname = "Gamma";
-[pd_light, hyp_light, nlml_light] = fitTemporal(Temperature_light_new, distname)
-[pd_heavy, hyp_heavy, nlml_heavy] = fitTemporal(Temperature_heavy_new, distname)
+[pd_light, hyp_light, nlml_light] = fitTemporal(Temperature_light_new, distname);
+[pd_heavy, hyp_heavy, nlml_heavy] = fitTemporal(Temperature_heavy_new, distname);
 
-%% plot the density
+
+%% print parameters
+pd_light
+hyp_light.cov
+
+pd_heavy
+hyp_heavy.cov
+
+
+%% plot the warping distribution and the histogram
 x = linspace(0, 20, 100);
 p_heavy = pdf(pd_heavy,x);
 figure(1);
@@ -70,4 +79,11 @@ histogram(Temperature_heavy_new,'Normalization','pdf')
 hold on
 plot(x,p_heavy)
 title("Temperature when the total rainfall is above ")
+
+p_light = pdf(pd_light,x);
+figure(2);
+histogram(Temperature_light_new,'Normalization','pdf')
+hold on
+plot(x,p_light)
+title("Temperature when the total rainfall is below ")
 

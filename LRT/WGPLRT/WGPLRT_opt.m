@@ -18,8 +18,10 @@ function LRT=WGPLRT_opt(H0,H1,warpinv,t,x0,snP)
     lb1 = hyp1.lb;ub1 = hyp1.ub;
     
     pd0=hyp0.dist;pd1=hyp1.dist;
-    covfunc0 = {H0.covfunc};
-    covfunc1 = {H1.covfunc};
+%     covfunc0 = {H0.covfunc};
+%     covfunc1 = {H1.covfunc};
+    covfunc0 = H0.covfunc;
+    covfunc1 = H1.covfunc;
     
     % Evalaute K0,K1
     K0 = feval(covfunc0{:}, hyp0.cov, t);

@@ -18,7 +18,7 @@ function [pd, hyp2, nlml] = fitTemporal(temp_process, distname)
     ell = 1; sf = 1;  
     covfunc = {@covMaterniso, 3};
     hyp.cov = log([ell;sf]);
-    likfunc = @likGauss; sn = 0.1; hyp.lik = log(sn);
+    likfunc = @likGauss; sn = 0.0001; hyp.lik = log(sn);
     
     % setting the prior for the latent gaussian process
     prior.mean = {{@priorDelta}};
@@ -27,6 +27,7 @@ function [pd, hyp2, nlml] = fitTemporal(temp_process, distname)
     inf = {@infPrior,@infGaussLik,prior};
 
     hyp2 = minimize(hyp, @gp, -100, inf, meanfunc, covfunc, likfunc, x, gp_temp);
-    nlml = gp(hyp2, @infGaussLik, meanfunc, covfunc, likfunc, x, gp_temp)
+    nlml = gp(hyp2, @infGaussLik, meanfunc, covfunc, likfunc, x, gp_temp);
+    assert(hyp2.lik < log(1e-3), "not negligible noise");
     
 end
