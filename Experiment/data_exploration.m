@@ -1,5 +1,9 @@
 clc;clear all;
 
+% Temperature_max = max(Temperature_reshaped, [] ,1)';
+% Temperature_new = processTemp(Temperature_max);
+Temperature_reshaped = reshape(Temperature_raw, 19, []);
+Temperature_ave = sum(Temperature_reshaped, 2)./size(Temperature_reshaped,2);
 
 C = {'0.000000'; '10.000000'; '100000.000000'};
 M = str2double(C)

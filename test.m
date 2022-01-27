@@ -1,3 +1,17 @@
+mu = 2;
+sigma = 3;
+N = 100000;
+g = mu + sigma * randn(N, 1);
+c = 1;
+index = g > c;
+emp_exp = sum((g(index) - mu)./sigma.^2)/length(index);
+formula = exp(-(c-mu)^2/2/sigma^2)/sqrt(2*pi)/sigma;
+diff = emp_exp - formula
+ 
+
+
+%%
+
 clc, clear all, close all
  
 meanfunc = {@meanSum, {@meanLinear, @meanConst}}; hyp.mean = [2; 1];
@@ -380,7 +394,7 @@ clear all;clc;
 meanfunc = @meanConst; hyp.mean=1;
 % covfunc = {@covSEiso}; ell = 1/2; sf = 1; hyp.cov=log([ell; sf]);
 % covfunc={@covFBM};sf0=1;h0=1/2;hyp.cov=[log(sf0);-log(1/h0-1)];
-covfunc = {@covMaterniso, 3}; ell1=1/2; sf1=1; hyp.cov=log([ell1; sf1]);
+covfunc = {@covMaterniso, 3}; ell1=1/2; sf1=2; hyp.cov=log([ell1; sf1]);
 q=0.5;
 % pd=makedist("Binomial",'N',1,'p',q); % Bernouli(p)
 pd=[];c=0;

@@ -1,12 +1,14 @@
-function [hyp0, hyp1] = FitTemporalProcess(figOpt)
+function [hyp0, hyp1] = FitTemporalProcess(figOpt, c)
 % given dataset, fit the temporal processes
-
 % import data 
 T6 = readtable('Data/Weather_Data_NEA/AWS S06 Hrly 2005-2019.csv','VariableNamingRule','modify');
+
 % extract data from 5 a.m. to 23 p.m. from 2005.1.1 -2017.8.20, 
-Data_raw = rmmissing(T6(1:110280,:));
-% take days from months April to June (Rain Season)
-Data_select = Data_raw(Data_raw.Month>=4 & Data_raw.Month<=6,:);
+Data_raw = T6(1:110280,:);
+Data_raw = Data_raw(Data_raw.Hour>=5 & Data_raw.Hour<=23,:);
+
+% take days from months June to Sept (Southwest Monsoon Season)
+Data_select = Data_raw(Data_raw.Month>=6 & Data_raw.Month<=9,:);
 
 nweeks = round(size(Data_select)/19/7);
 weeks = 1:nweeks;
@@ -24,7 +26,7 @@ RH_total_week = sum(RH_reshaped, 1)./19./7;
 RH_total_week = rmoutliers(RH_total_week, 'mean');
 
 %% thresholding based on median value
-RH_med = median(RH_total_week);
+RH_med = c;
 RH_light_week = weeks(RH_total_week < RH_med);
 RH_heavy_week = weeks(RH_total_week >= RH_med);
 

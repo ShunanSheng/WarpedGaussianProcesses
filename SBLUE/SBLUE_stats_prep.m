@@ -41,6 +41,7 @@ function SBLUEprep=SBLUE_stats_prep(covfunc,meanfunc,hyp,Xtrain,xstar)
         end
         
         SBLUEprep.mXstar=mXstar;
+        SBLUEprep.Cov_xtrain = K;
         SBLUEprep.chat=(c-mu)./diag(K);
         SBLUEprep.Cov_xstar=Cov_xstar;
         SBLUEprep.CovP=struct("P1",P1,"P2",P2,"P3",P3,"P4",P4);

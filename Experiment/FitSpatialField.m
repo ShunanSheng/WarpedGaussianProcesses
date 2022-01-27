@@ -14,7 +14,7 @@ for i = 1:nstns
     stn_name = extractBetween(d(i).name, "AWS","Hrly");
     stns_lst{i} = stn_name{1};
     data = readtable(fullfile(rootdir,d(i).name));  % read the jth file in ith directory
-    data_filtered = data(data.Month >=5 &  data.Month <=7 & data.Year==2012 &...
+    data_filtered = data(data.Month >=6 &  data.Month <=9 & data.Year==2012 &...
     data.Hour>=5 & data.Hour<=23, :);
     data_RH = data_filtered.RH___;
     if iscell(data_RH)
@@ -34,7 +34,7 @@ end
 
 %% calculate average weekly RH
 nweeks = floor(size(Data_cell{1},1)/19/7);
-Data_weeks = Data(1:nweeks*19*7, :);
+Data_weeks = Data(19*2+1:19*2+nweeks*19*7, :);
 Data_reshaped = reshape(Data_weeks, 19*7, [],nstns);
 Data_ave_week = reshape(sum(Data_reshaped, 1)./19./7,[],nstns);
 

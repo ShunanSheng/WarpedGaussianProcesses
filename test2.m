@@ -1,4 +1,38 @@
-% Australia border, and limits around it
+%% get points inside Singapore
+xv = S.X;
+yv = S.Y;
+in = inpolygon(xSp,ySp, xv', yv');
+
+%% plot grid points inside Singapore
+figure()
+plot(xv,yv) % polygon
+axis equal
+hold on
+plot(xSp(in),ySp(in),'r.') % points inside the polygon
+hold off
+
+
+%% partition the training and test data
+clc, close all
+rng(120)
+stns_loc = horzcat(lat, long);
+ntrain = floor(nstns * 1);
+index_train = randperm(nstns, ntrain);
+index_test = setdiff(1:nstns, index_train);
+
+stns_train = stns_loc(index_train, :);
+stns_test = stns_loc(index_test, :);
+
+data_train = Data_ave_week(:, index_train);
+data_test = Data_ave_week(:, index_test);
+
+%% plot training and test stations
+figure()
+geoscatter(stns_train(:,1), stns_train(:,2),'r','^')
+hold on
+geoscatter(stns_test(:,1), stns_test(:,2),'b','^')
+legend(["Training set","Test set"])
+geobasemap streets-light
 
 %%
 clc, close all, clear all

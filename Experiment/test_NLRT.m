@@ -47,8 +47,8 @@ warpdist0="Normal";warpdist1="Normal";M=50;
 hyp0=struct('mean',0,'cov',hyp0.cov,'dist',pd0,'t',T,'lb',lb0,'ub',ub0);
 hyp1=struct('mean',0,'cov',hyp1.cov,'dist',pd1,'t',T,'lb',lb1,'ub',ub1);
 
-H0=struct("meanfunc",meanfunc0,"covfunc",covfunc0,"hyp",hyp0);
-H1=struct("meanfunc",meanfunc1,"covfunc",covfunc1,"hyp",hyp1);
+H0=struct("meanfunc",meanfunc0,"covfunc",{covfunc0},"hyp",hyp0);
+H1=struct("meanfunc",meanfunc1,"covfunc",{covfunc1},"hyp",hyp1);
 
 %%% warping function
 warpfunc=@(pd,p) invCdf(pd,p);

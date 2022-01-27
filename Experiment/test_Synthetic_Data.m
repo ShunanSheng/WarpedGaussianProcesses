@@ -1,12 +1,11 @@
 clear all,close all,clc
 % Create a synthetic dataset and evaluate the performance on the dataset
 % Create the synthetic dataset
-% Setup for Spatial Random field
+%%% Setup for Spatial Random field
 meanfunc = @meanConst; 
 covfunc = {@covSEiso}; ell = 1/2; sf = 1; hyp.cov=log([ell; sf]); 
 c=0;pd=[];% that is q=0.5 and pd=makedist("Binomial",'N',1,'p',q); % Bernouli(p)
 hyp=struct('mean',0,'cov',hyp.cov,'dist',pd,'thres',c);
-
 
 %%% H0 Null hypothesis
 meanfunc0 = @meanConst; 

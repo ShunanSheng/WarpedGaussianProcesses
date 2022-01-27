@@ -45,8 +45,10 @@ pd1=makedist('Gamma','a',20.3009,'b',0.418466)
 
 %%% Parameters for the sensor network
 % T=20; M=50; snP=0.1; 
-T = 19 * 7;
-M = 19* 7;
+% T = 19 * 7;
+% M = 19 * 7;
+T = 7;
+M = 7;
 snP = 0.1;
 % each point observation zP is of size Mx1 with noise ~ N(0,snP^2I)
 
@@ -121,7 +123,7 @@ plotROC(TP,FP)
 % save('FP.mat','FP')
 %% Locating the LRT threshold
 
-alpha=0.10; % significance Level
+alpha=0.1; % significance Level
 optLogGamma=WGPLRT_opt_gamma(LRT,hyp0,C0,mu0,warpfunc,t,snP,alpha);
 logGamma=optLogGamma % compute for n values with nhat observations in one batch
 
