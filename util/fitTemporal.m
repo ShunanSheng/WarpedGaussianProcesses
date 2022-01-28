@@ -16,7 +16,7 @@ function [pd, hyp2, nlml] = fitTemporal(temp_process, distname)
 
     meanfunc = @meanConst; hyp.mean = 0;
     ell = 1; sf = 1;  
-    covfunc = {@covMaterniso, 3};
+    covfunc = {@covMaterniso, 5};
     hyp.cov = log([ell;sf]);
     likfunc = @likGauss; sn = 0.0001; hyp.lik = log(sn);
     

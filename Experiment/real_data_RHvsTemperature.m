@@ -13,7 +13,7 @@ nweeks = round(size(Data_select)/19/7);
 weeks = 1:nweeks;
 ndays = 7 * nweeks;
 nhours = 19 * ndays;
-Data = Data_raw(1:nhours, :);
+Data = Data_raw(19*2+1:19*2+nhours, :);
 head(Data)
 
 %% selecting the fields, no missing data
@@ -33,7 +33,7 @@ RH_light_week = weeks(RH_total_week < RH_med);
 RH_heavy_week = weeks(RH_total_week >= RH_med);
 
 %% select daily maximum temperature 
-% remove the linear trend and make the data right skewed (10 - data)
+% make the data right skewed (10 - data)
 Temperature_reshaped = reshape(Temperature_raw, 19, []);
 Temperature_hourly_ave = sum(Temperature_reshaped, 2)./size(Temperature_reshaped,2);
 Temperature_ave_rm = reshape(Temperature_reshaped - Temperature_hourly_ave, [], 1);

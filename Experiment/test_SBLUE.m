@@ -5,7 +5,7 @@ meanfunc = @meanConst;hyp.mean=0;
 % covfunc = {@covSEiso}; ell = 1/2; sf = 1; hyp.cov=log([ell; sf]);
 % covfunc={@covFBM};sf0=1;h0=1/2;hyp.cov=[log(sf0);-log(1/h0-1)];
 % covfunc = {@covMaterniso, 3}; ell=2; sf=1; hyp.cov=log([ell; sf]);
-covfunc = {@covMaterniso, 3}; ell=-3.1003; sf=1.8084; hyp.cov=log([ell; sf]);
+covfunc = {@covMaterniso, 3}; ell=exp(1); sf=1; hyp.cov=log([ell; sf]);
 % q=0.5;pd=makedist("Binomial",'N',1,'p',q); % Bernouli(p)
 pd=[];c=0;
 hyp=struct('mean',hyp.mean,'cov',hyp.cov,'dist',pd,'thres',c);
@@ -127,8 +127,8 @@ g_train=g(indexTrain);
 KXX=feval(covfunc{:},hyp.cov,Xtrain);
 KxX=feval(covfunc{:}, hyp.cov, Xtest, Xtrain);
 g_pred=KxX / KXX * g_train;
-Ypred=g_pred>SBLUE.c;
-MSE_GPR=sum((Ypred-Ytest).^2)/length(Ypred);
+Ypred=g_pred>c;
+MSE_GPR=sum((Ypred-Ytest).^2)/length(Ypred)
 t_GPR=toc;
 
 %% KNN, run KNN using the noisy data
