@@ -1,11 +1,11 @@
 %%% Test of SBLUE on 1D and 2D simulated data
 clear all;close all;clc;
-
 % Set up the spatial fied
 meanfunc = @meanConst;hyp.mean=0;
 % covfunc = {@covSEiso}; ell = 1/2; sf = 1; hyp.cov=log([ell; sf]);
 % covfunc={@covFBM};sf0=1;h0=1/2;hyp.cov=[log(sf0);-log(1/h0-1)];
-covfunc = {@covMaterniso, 3}; ell1=2; sf1=1; hyp.cov=log([ell1; sf1]);
+% covfunc = {@covMaterniso, 3}; ell=2; sf=1; hyp.cov=log([ell; sf]);
+covfunc = {@covMaterniso, 3}; ell=exp(1); sf=1; hyp.cov=log([ell; sf]);
 % q=0.5;pd=makedist("Binomial",'N',1,'p',q); % Bernouli(p)
 pd=[];c=0;
 hyp=struct('mean',hyp.mean,'cov',hyp.cov,'dist',pd,'thres',c);
@@ -127,8 +127,8 @@ g_train=g(indexTrain);
 KXX=feval(covfunc{:},hyp.cov,Xtrain);
 KxX=feval(covfunc{:}, hyp.cov, Xtest, Xtrain);
 g_pred=KxX / KXX * g_train;
-Ypred=g_pred>SBLUE.c;
-MSE_GPR=sum((Ypred-Ytest).^2)/length(Ypred);
+Ypred=g_pred>c;
+MSE_GPR=sum((Ypred-Ytest).^2)/length(Ypred)
 t_GPR=toc;
 
 %% KNN, run KNN using the noisy data
@@ -152,9 +152,6 @@ fprintf('KNN w0 noise has MSE= %4.3f,with time= %4.3f\n',MSE_KNN,t_KNN);
 fprintf('GPR wo noise has MSE= %4.3f,with time= %4.3f\n',MSE_GPR,t_GPR);
 
 
-
-%%
-
 % In order to plot MSE graph to see the change of MSE over Rho
 % we may use Rho to control both true negative & true positive rate for A1,A2
 % Rho=linspace(0.01,1,100)'; 
@@ -166,50 +163,49 @@ TP=load('TP.mat','TP');TPR=TP.TP;
 FP=load('FP.mat','FP');FPR=FP.FP;
 TPR=TPR(336:1500);
 FPR=FPR(336:1500);
-%%
 
-L=length(FPR);MSE=zeros(L,1);
+L = length(FPR);MSE = zeros(L,1);
 
-M=1000;
-YT=repmat(Ytest,[1,M]);
+M = 1000;
+YT = repmat(Ytest,[1,M]);
 for i=1:L % We expect when rho is extreme, i.e. close to 0 or 1
     % the performance is better since it gives more information to the
     % SBLUE
-    tp=TPR(i);fp=FPR(i); % Suppose ROC : y=x 
-    A=[1-fp,fp;1-tp,tp]; % Define the confusion matrix for both A1,A2
+    tp = TPR(i);fp = FPR(i); % Suppose ROC : y=x 
+    A =[1-fp,fp;1-tp,tp]; % Define the confusion matrix for both A1,A2
     % Simulate the noisy data
-    Yhat_noise=repmat( Ytrain, [1,M] );
+    Yhat_noise = repmat( Ytrain, [1,M] );
     for j=1:M
-        rnd=rand(length(Ytrain),1);
-        rnd1=rnd>tp; % filp the 1 to 0 with prob 1-tp
-        rnd2=rnd> (1-fp);% filp the 0 to 1 with prob fp
+        rnd = rand(length(Ytrain),1);
+        rnd1 = rnd>tp; % filp the 1 to 0 with prob 1-tp
+        rnd2 = rnd> (1-fp);% filp the 0 to 1 with prob fp
  
-        Y1=Yhat_noise(:,j)==1;
-        Y0=Yhat_noise(:,j)==0;
+        Y1 = Yhat_noise(:,j)==1;
+        Y0 = Yhat_noise(:,j)==0;
         
-        idP1=logical(liP.*Y1);
-        idP0=logical(liP.*Y0);
+        idP1 = logical(liP.*Y1);
+        idP0 = logical(liP.*Y0);
         
-        idI1=logical(liI.*Y1);
-        idI0=logical(liI.*Y0);
+        idI1 = logical(liI.*Y1);
+        idI0 = logical(liI.*Y0);
         
-        Yhat_noise(idP1,j)=(1-rnd1(idP1)).*Yhat_noise(idP1,j)...
+        Yhat_noise(idP1,j) = (1-rnd1(idP1)).*Yhat_noise(idP1,j)...
                                     +rnd1(idP1).*(1-Yhat_noise(idP1,j));
-        Yhat_noise(idP0,j)=(1-rnd2(idP0)).*Yhat_noise(idP0,j)...
+        Yhat_noise(idP0,j) = (1-rnd2(idP0)).*Yhat_noise(idP0,j)...
                                     +rnd2(idP0).*(1-Yhat_noise(idP0,j));
                                     
-        Yhat_noise(idI1,j)=(1-rnd1(idI1)).*Yhat_noise(idI1,j)...
+        Yhat_noise(idI1,j) = (1-rnd1(idI1)).*Yhat_noise(idI1,j)...
                                     +rnd1(idI1).*(1-Yhat_noise(idI1,j));
-        Yhat_noise(idI0,j)=(1-rnd2(idI0)).*Yhat_noise(idI0,j)...
+        Yhat_noise(idI0,j) = (1-rnd2(idI0)).*Yhat_noise(idI0,j)...
                                     +rnd2(idI0).*(1-Yhat_noise(idI0,j)); 
     end
     
-    transitionMat=SBLUE_confusion(A,A,liP,liI);
-    % Apply SBLUE
-    SBLUE=SBLUE_stats(SBLUEprep,transitionMat,c);
-    Ypred=SBLUE_pred(SBLUE,Yhat_noise);
+    transitionMat = SBLUE_confusion(A,A,liP,liI);
+    % Apply SBLUE 
+    SBLUE = SBLUE_stats(SBLUEprep,transitionMat,c);
+    Ypred = SBLUE_pred(SBLUE,Yhat_noise);
     % Evaluate the MSE and Accuracy
-    MSE(i)=sum((Ypred(:)-YT(:)).^2)/length(Ypred(:));
+    MSE(i) = sum((Ypred(:)-YT(:)).^2)/length(Ypred(:));
     if mod(i,floor(L/10))==0
         fprintf("Iteration %d, fp=%4.2f, MSE=%4.2f\n",i,fp, MSE(i));
     end

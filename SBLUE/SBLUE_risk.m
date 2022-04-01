@@ -1,5 +1,4 @@
-function R=SBLUE_risk(SBLUE)
+function R = SBLUE_risk(Cov_gstar, SBLUE)
     % Compute Bayes risk of SBLUE
-    R=1-diag(SBLUE.Covg/(SBLUE.CovY) * SBLUE.Covg');
-    
+    R = diag(Cov_gstar)-diag(SBLUE.Covg/(SBLUE.CovY) * SBLUE.Covg');
 end

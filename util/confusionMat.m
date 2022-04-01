@@ -1,4 +1,4 @@
-function [TP,FP]=confusionMat(y,yhat)
+function [TPR,FPR]=confusionMat(y,yhat)
     % Compute the confusion matrix given the ground truth y (0,1) (vector) and predictions
     % yhat (0,1) (vector), let's say 1 indictaes true and 0 indicate false
     % Input : 
@@ -17,6 +17,6 @@ function [TP,FP]=confusionMat(y,yhat)
     fn=sum((y==1)&(yhat==0));
     tn=sum((y==0)&(yhat==0));
     
-    TP=tp/(tp+fn);
-    FP=fp/(fp+tn);
+    TPR=tp/(tp+fn);
+    FPR=fp/(fp+tn);
 end

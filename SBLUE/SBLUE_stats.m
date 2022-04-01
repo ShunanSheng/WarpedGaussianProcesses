@@ -12,12 +12,13 @@ function SBLUE=SBLUE_stats(SBLUEprep,transitionMat,c)
     CovP=SBLUEprep.CovP;
     Cov_xstar=SBLUEprep.Cov_xstar;
     chat=SBLUEprep.chat;
+    Cov_xtrain = SBLUEprep.Cov_xtrain;
     
     
     % compute parameters
     mY=meanY(transitionMat,chat);        
     Cov_Y=covY(transitionMat,CovP,mY,chat);
-    Cov_g=covgY(transitionMat,Cov_xstar,chat);
+    Cov_g=covgY(transitionMat,Cov_xstar,chat, sqrt(diag(Cov_xtrain)));
     
     % create strtucture
     SBLUE.mY=mY;

@@ -25,13 +25,13 @@ function Cov_Y=covY(p,CovP,mY,chat)
     p4=p11*p11'; 
     
     
-    Cov_Y=p1.*P1+p2.*P2+p3.*P3+p4.*P4;
+    Cov_Y = p1.*P1+p2.*P2+p3.*P3+p4.*P4;
     Cov_Y = Cov_Y + Cov_Y';
     
     % Replace the diagonal elements
     % The current varY :=E(Y_i^2)
     
-    varY=diag(p1).*normcdf(chat)+diag(p4).*normcdf(-chat);
+    varY = diag(p1).*normcdf(chat)+diag(p4).*normcdf(-chat);
     Cov_Y(1:N + 1:end) = varY;
     
     % Subtract E(Y)^2

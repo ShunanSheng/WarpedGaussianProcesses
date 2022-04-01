@@ -20,12 +20,11 @@ function Lambda=NLRT_pred_delta(D0,D1,delta)
             n1{k}=sum(D1(:,(k-1)*nhat+1:end)<delta,1);
         end
     end
-    N0=horzcat(n0{:});
-    N1=horzcat(n1{:});
+    N0 = horzcat(n0{:});
+    N1 = horzcat(n1{:});
     
-    epsilon=0.1; % To avoid ill-division
+    epsilon = 0.1; % To avoid ill-division
     
-    Lambda=((N0+epsilon)./(N1+epsilon))'; % the test statistic
-    Lambda(isnan(Lambda))=0;
-
+    Lambda = ((N0+epsilon)./(N1+epsilon))'; % the test statistic
+    Lambda(isnan(Lambda)) = 0;
 end

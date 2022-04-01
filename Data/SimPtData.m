@@ -19,5 +19,5 @@ function ZP=SimPtData(hyp,C,mu,warpfunc,t,snP,nP)
     % Define the latent Gaussian Process
     f = C'*randn(M, nP) + mu;
     % Define the warped Gaussian Process, then the point observations
-    ZP=warpfunc(hyp.dist,f)+snP*randn(M,nP);
+    ZP = warpfunc(hyp.dist,f)+snP*randn(M,nP);
 end

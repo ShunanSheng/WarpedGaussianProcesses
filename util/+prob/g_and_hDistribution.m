@@ -1,16 +1,16 @@
 classdef g_and_hDistribution < prob.ToolboxFittableParametricDistribution
-% This is a sample implementation of the Laplace distribution. You can use
+% This is a sample implementation of the g_and_h distribution. You can use
 % this template as a model to implement your own distribution. Create a
 % directory called '+prob' somewhere on your path, and save this file in
 % that directory using a name that matches your distribution name.
 %
-%    An object of the LaplaceDistribution class represents a g_and_h
+%    An object of the g_and_hDistribution class represents a g_and_h
 %    probability distribution with a specific location parameter g and
 %    scale parameter h. This distribution object can be created directly
 %    using the MAKEDIST function or fit to data using the FITDIST function.
 %
 %    note that only limited propeties of g_and_h are implemented, indicated
-%    as [done] , others are directly adopted from the Laplace distribution
+%    as [done] , others are directly adopted from the g_and_h distribution
 %    g_and_hDistribution methods:
 %       cdf                   - Cuglative distribution function [done]
 %       fit                   - Fit distribution to data
@@ -26,7 +26,7 @@ classdef g_and_hDistribution < prob.ToolboxFittableParametricDistribution
 %       truncate              - Truncation distribution to an interval
 %       var                   - Variance
 %
-%    LaplaceDistribution properties:    
+%    g_and_hDistribution properties:    
 %       DistributionName      - Name of the distribution
 %       g                     - Value of the g parameter
 %       h                     - Value of the h parameter
@@ -151,12 +151,14 @@ classdef g_and_hDistribution < prob.ToolboxFittableParametricDistribution
             if  this.h<1/2
                 if this.g==0
                     e2 = 1./sqrt((1-2*this.h).^3);
+                    e = 0;
                 else 
                     e2 = (1-2*exp(this.g^2/(2-4*this.h))+...
                         exp(2*this.g^2/(1-2*this.h)))/this.g^2/sqrt(1-2*this.h);
+                    e =  1/this.g/sqrt(1-this.h)*(exp(this.g^2/(1-this.h)/2)-1);
                 end
-                v = this.sca^2*e2+2*this.sca*this.loc*this.mean+this.loc^2-...
-                    this.mean^2;
+                v = this.sca^2*e2+2*this.sca*this.loc*e+this.loc^2+...
+                    this.mean^2-2*this.sca*this.mean*e-2*this.loc*this.mean;
             else
                 v=NaN;
             end
@@ -210,8 +212,8 @@ classdef g_and_hDistribution < prob.ToolboxFittableParametricDistribution
         % function, and is not intended to be called directly
         function pd = fit(x,varargin)
 %FIT Fit from data
-%   P = prob.LaplaceDistribution.fit(x)
-%   P = prob.LaplaceDistribution.fit(x, NAME1,VAL1, NAME2,VAL2, ...)
+%   P = prob.g_and_hDistribution.fit(x)
+%   P = prob.g_and_hDistribution.fit(x, NAME1,VAL1, NAME2,VAL2, ...)
 %   with the following optional parameter name/value pairs:
 %
 %          'censoring'    Boolean vector indicating censored x values
@@ -227,7 +229,7 @@ classdef g_and_hDistribution < prob.ToolboxFittableParametricDistribution
             % This distribution was not written to support censoring or to process
             % a frequency vector. The following utility expands x by the frequency
             % vector, and displays an error message if there is censoring.
-            x = prob.ToolboxFittableParametricDistribution.removeCensoring(x,cens,freq,'laplace');
+            x = prob.ToolboxFittableParametricDistribution.removeCensoring(x,cens,freq,'g_and_h');
             freq = ones(size(x));
 
             % Estimate the parameters from the data. If this is an iterative procedure,
@@ -236,11 +238,11 @@ classdef g_and_hDistribution < prob.ToolboxFittableParametricDistribution
             s = mean(abs(x-m));
 
             % Create the distribution by calling the constructor.
-            pd = prob.LaplaceDistribution(m,s);
+            pd = prob.g_and_hDistribution(m,s);
             
             % Fill in remaining properties defined above
             pd.ParameterIsFixed = [false false];
-            [nll,acov] = prob.LaplaceDistribution.likefunc([m s],x);
+            [nll,acov] = prob.g_and_hDistribution.likefunc([m s],x);
             pd.ParameterCovariance = acov;
 
             % Assign properties required for the FittableDistribution class
@@ -252,7 +254,7 @@ classdef g_and_hDistribution < prob.ToolboxFittableParametricDistribution
         % ToolboxParametricDistribution class and are used by various
         % Statistics and Machine Learning Toolbox functions. These functions operate on
         % parameter values supplied as input arguments, not on the
-        % parameter values stored in a LaplaceDistribution object. For
+        % parameter values stored in a g_and_hDistribution object. For
         % example, the cdf method implemented in a parent class invokes the
         % cdffunc static method and provides it with the parameter values.
 %         function [nll,acov] = likefunc(params,x) % likelihood function
@@ -260,7 +262,7 @@ classdef g_and_hDistribution < prob.ToolboxFittableParametricDistribution
 %             g = params(1);
 %             h = params(2);
 %             
-%             nll = -sum(log(prob.LaplaceDistribution.pdffunc(x,g,h)));
+%             nll = -sum(log(prob.g_and_hDistribution.pdffunc(x,g,h)));
 %             acov = (h^2/n) * eye(2);
 %         end
          function y = cdffunc(x,g,h,loc,sca)          % cumulative distribution function
@@ -276,7 +278,7 @@ classdef g_and_hDistribution < prob.ToolboxFittableParametricDistribution
         end
         
         function y = randfunc(g,h,varargin) % random number generator
-            y = prob.LaplaceDistribution.invfunc(rand(varargin{:}),g,h);
+            y = prob.g_and_hDistribution.invfunc(rand(varargin{:}),g,h);
         end
     end
     methods(Static,Hidden)

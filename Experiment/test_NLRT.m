@@ -6,15 +6,15 @@ clear all,close all,clc
 %%% H0 Null hypothesis
 meanfunc0 = @meanConst; 
 % covfunc0 = {@covSEiso}; ell0 =1/2; sf0 = 1; hyp0.cov=log([ell0; sf0]);
-covfunc0 = {@covMaterniso, 1}; ell1=1; sf1=1; hyp0.cov=log([ell1; sf1]);
+covfunc0 = {@covMaterniso, 1}; ell0=1; sf0=1; hyp0.cov=log([ell0; sf0]);
 % covfunc0={@covFBM};sf0=1;h0=1/2;hyp0.cov=[log(sf0);-log(1/h0-1)];
 % pd0=makedist('Normal','mu',10,'sigma',1)
 % pd0=makedist('Normal','mu',0,'sigma',1)
 % pd0=makedist('Normal','mu',2,'sigma',4)
 % pd0=makedist('Gamma','a',2,'b',4)
 % pd0 = makedist("g_and_h","g",0.01,"h",0.01,'loc',0,'sca',1)
-% pd0 = makedist("g_and_h","g",0.1,"h",0.4,'loc',1,'sca',1)
-pd0 = makedist("g_and_h","g",0.1,"h",0.1,'loc',0,'sca',1)
+pd0 = makedist("g_and_h","g",0.1,"h",0.4,'loc',1,'sca',1)
+% pd0 = makedist("g_and_h","g",0.1,"h",0.1,'loc',0,'sca',1)
 
 %%% H1 Alternative hypothesis
 
@@ -28,12 +28,12 @@ covfunc1 = {@covMaterniso, 5}; ell1=1; sf1=1; hyp1.cov=log([ell1; sf1]);
 % pd1=makedist('Normal','mu',2,'sigma',4)
 % pd1=makedist('Logistic','mu',10,'sigma',10)
 % pd1 = makedist("g_and_h","g",0.01,"h",0.,'loc',0,'sca',1)
-% pd1 = makedist("g_and_h","g",0.1,"h",0.4,'loc',1,'sca',1)
-pd1 = makedist("g_and_h","g",0.1,"h",0.2,'loc',0,'sca',1)
+pd1 = makedist("g_and_h","g",0.1,"h",0.4,'loc',1,'sca',1)
+% pd1 = makedist("g_and_h","g",0.1,"h",0.4,'loc',0,'sca',1)
 
 
 %%% Parameters for the sensor network
-T=20; K=50; snI=0.5; 
+T=20; K=50; snI=0.1; 
 
 
 
@@ -47,8 +47,8 @@ warpdist0="Normal";warpdist1="Normal";M=50;
 hyp0=struct('mean',0,'cov',hyp0.cov,'dist',pd0,'t',T,'lb',lb0,'ub',ub0);
 hyp1=struct('mean',0,'cov',hyp1.cov,'dist',pd1,'t',T,'lb',lb1,'ub',ub1);
 
-H0=struct("meanfunc",meanfunc0,"covfunc",covfunc0,"hyp",hyp0);
-H1=struct("meanfunc",meanfunc1,"covfunc",covfunc1,"hyp",hyp1);
+H0=struct("meanfunc",meanfunc0,"covfunc",{covfunc0},"hyp",hyp0);
+H1=struct("meanfunc",meanfunc1,"covfunc",{covfunc1},"hyp",hyp1);
 
 %%% warping function
 warpfunc=@(pd,p) invCdf(pd,p);
@@ -61,7 +61,7 @@ nI=10000;n0=nI*0.5;n1=nI-n0;
 yn=[zeros(n0,1);ones(n1,1)]; % ground truth, the value of latent field, 
 % half the null hypothesis and half the alternative hypothesis
 
-kw= ceil(exp(log(10000*T/K/180)/4)); % calculate the number of point neeed per window under Simpson's rule with 0.01 error
+kw= ceil(exp(log(10000*T/K/180)/4)); % calculate the number of point needed per window under Simpson's rule with 0.01 error
 kw= round(kw/2)*2;n=kw*K;x=linspace(0,T,n)';
     
 C0 = chol(feval(covfunc0{:}, hyp0.cov, x)+1e-9*eye(n));
@@ -87,14 +87,14 @@ J=10000; % number of samples per hypothesis
 
 %% Plot ROC
 clc;
-N=1000;M=10;LogGamma=linspace(-200,200,N);Delta=linspace(0,1,M);% distance tolerance
+N=1000;M=10;LogGamma=linspace(-100,100,N);Delta=linspace(0,1,M);% distance tolerance
 TP=zeros(N,M);FP=zeros(N,M);
 [D0,D1]=NLRT_stats(ZI,ZI0,ZI1,sumstats,d); % compute the distance matrix
 
 tic;
 for i=1:M
     delta=Delta(i);
-    Lambda=NLRT_pred_delta(D0,D1,delta);
+    Lambda=NLRT_pred_delta(D0,D1,delta); % test statistics
     for j=1:N
         logGamma=LogGamma(j);
         yhat=NLRT_pred_gamma(Lambda,logGamma); % Compute yhat given Lambda and logGamma
@@ -108,11 +108,12 @@ for i=1:M
 end
 avergeTime=toc/M
 
-% Plot the ROC graph
+% plot the ROC graph
 close all;
 FigLegend=cell(M,1);
 for i=1:M
-   FigLegend{i}="delta="+Delta(i); % create legend recording delta
+   % create legends representing delta
+   FigLegend{i}="delta="+Delta(i); 
 end
 
 plotROC(TP,FP,[],FigLegend)
@@ -133,8 +134,9 @@ for j=1:N
 end
 plotROC(TP,FP,"ROC:NLRT","delta="+optDelta)
 
-%% find the optimal logGamma
-delta=0.1;alpha=0.1;
+%% find the optimal logGammadelta=0.1;alpha=0.1;
+delta = 0.1;
+alpha = 0.1;
 optlogGamma=NLRT_opt_logGamma(hyp0,C0,mu0,ZI0,ZI1,warpfunc,sumstats,d,K,kw,snI,delta,alpha)
 
 %% The performance at the opt_logGamma
