@@ -14,8 +14,7 @@ function SBLUEprep=SBLUE_stats_prep(covfunc,meanfunc,hyp,Xtrain,xstar)
         mu=meanfunc(hyp.mean, Xtrain);
         K=feval(covfunc{:},hyp.cov,Xtrain); % Cov_Xtrain
         mXstar=meanfunc(hyp.mean,xstar);
-        Cov_xstar=feval(covfunc{:}, hyp.cov, xstar, Xtrain); % Cov(xsatr, Xtrain)
-        
+        Cov_xstar = feval(covfunc{:}, hyp.cov, xstar, Xtrain); % Cov(xtar, Xtrain)
         c=hyp.thres;
         
         P1=zeros(N);P2=zeros(N);P3=zeros(N);P4=zeros(N);
@@ -40,9 +39,9 @@ function SBLUEprep=SBLUE_stats_prep(covfunc,meanfunc,hyp,Xtrain,xstar)
             end
         end
         
-        SBLUEprep.mXstar=mXstar;
+        SBLUEprep.mXstar = mXstar;
         SBLUEprep.Cov_xtrain = K;
-        SBLUEprep.chat=(c-mu)./diag(K);
-        SBLUEprep.Cov_xstar=Cov_xstar;
-        SBLUEprep.CovP=struct("P1",P1,"P2",P2,"P3",P3,"P4",P4);
+        SBLUEprep.chat=(c-mu)./sqrt(diag(K));
+        SBLUEprep.Cov_xstar = Cov_xstar;
+        SBLUEprep.CovP = struct("P1",P1,"P2",P2,"P3",P3,"P4",P4);
 end

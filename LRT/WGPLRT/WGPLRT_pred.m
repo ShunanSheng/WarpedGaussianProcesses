@@ -29,6 +29,6 @@ function yhat=WGPLRT_pred(ZP,LRT,logGamma)
         % Decision
         Yhat{k}=(Lambda>-logGamma)';
     end
-    yhat=vertcat(Yhat{:});
+    yhat = vertcat(Yhat{:});
  
 end

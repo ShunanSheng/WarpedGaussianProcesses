@@ -13,7 +13,6 @@ function result=F1score(y,yhat)
     tp=sum((y==1)&(yhat==1));
     fp=sum((y==0)&(yhat==1));    
     fn=sum((y==1)&(yhat==0));
-%     tn=sum((y==0)&(yhat==0));
     
     result= 2*tp/(2*tp+fp+fn);
 

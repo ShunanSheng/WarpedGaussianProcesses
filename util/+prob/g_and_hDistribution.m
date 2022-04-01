@@ -151,12 +151,14 @@ classdef g_and_hDistribution < prob.ToolboxFittableParametricDistribution
             if  this.h<1/2
                 if this.g==0
                     e2 = 1./sqrt((1-2*this.h).^3);
+                    e = 0;
                 else 
                     e2 = (1-2*exp(this.g^2/(2-4*this.h))+...
                         exp(2*this.g^2/(1-2*this.h)))/this.g^2/sqrt(1-2*this.h);
+                    e =  1/this.g/sqrt(1-this.h)*(exp(this.g^2/(1-this.h)/2)-1);
                 end
-                v = this.sca^2*e2+2*this.sca*this.loc*this.mean+this.loc^2+...
-                    this.mean^2-2*this.sca*this.mean.^2-2*this.loc*this.mean;
+                v = this.sca^2*e2+2*this.sca*this.loc*e+this.loc^2+...
+                    this.mean^2-2*this.sca*this.mean*e-2*this.loc*this.mean;
             else
                 v=NaN;
             end

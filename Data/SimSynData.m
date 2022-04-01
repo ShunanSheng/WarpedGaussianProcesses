@@ -1,4 +1,4 @@
-function Data=SimSynData(SP,H0,H1,warpfunc_sf, warpfunc, modelHyp)
+function Data=SimSynData(SP,H0,H1,warpfunc_sp, warpfunc, modelHyp, locHyp)
     % Generate a test dataset 
     %
     % Input: 
@@ -7,6 +7,7 @@ function Data=SimSynData(SP,H0,H1,warpfunc_sf, warpfunc, modelHyp)
     % modelHyp : parameters for sensor network (T,M,K,snI,snP)
     % warpfunc : warpfunc handle
     % warpfunc_sp : warpfunc handle for the spatial field
+    % locHyp : the spatial locations and training/test indexes
     
     % Output: 
     % ZP : all point observations M x NP 
@@ -18,22 +19,36 @@ function Data=SimSynData(SP,H0,H1,warpfunc_sf, warpfunc, modelHyp)
     
     
     % Binary spatial field GP(0,C)
-    rng("default")
     meanfunc = SP.meanfunc; 
     covfunc = SP.covfunc;
     hyp = SP.hyp;
-    x = SP.loc;
     
+   
+    if ~exist('locHyp','var') || isempty(locHyp)
+        rng('default')
+        n = 50; xinf = -5; xsup = 5;
+        [X,Y] = meshgrid(linspace(xinf,xsup,n),linspace(xinf,xsup,n));
+        xSp = reshape(X,[],1);
+        ySp = reshape(Y,[],1); 
+        x = [xSp,ySp];
+        N = n.^2; % Total number of sensors
+        
+        % The index of training and test data
+        indexTest = randperm(N,floor(N/5))';
+        indexTrain = setdiff(1:N,indexTest)';
+    else
+        x = locHyp.x;
+        indexTrain = locHyp.indexTrain;
+        indexTest = locHyp.indexTest;
+    end
+        
+%     rng('default')
     % Generate the lantent binary spatial field
-    y=SimWGP(hyp,meanfunc,covfunc,warpfunc_sf,x);
+    g = SimGP(hyp,meanfunc,covfunc,x);
+    y = warpfunc_sp(hyp.thres,g);
+%     y = SimWGP(hyp,meanfunc,covfunc,warpfunc_sf,x);
     
-    % Total number of sensors
-    N=length(y); 
-    
-    % The index of training and test data
-    indexTest=randperm(N,floor(N/5))';
-    indexTrain=setdiff(1:N,indexTest)';
-    
+
     % The indexes of point sensors and integral sensors
     
     Ntrain=length(indexTrain);
@@ -88,18 +103,19 @@ function Data=SimSynData(SP,H0,H1,warpfunc_sf, warpfunc, modelHyp)
     ZI1 = SimIntData(hyp1,CI1,muI1, warpfunc,K,kw,snI,nI1);
     
     % Create Data structure
-    Data.ZP.H0=ZP0;
-    Data.ZP.H1=ZP1;
-    Data.ZI.H0=ZI0;
-    Data.ZI.H1=ZI1;
-    Data.indexTrain=indexTrain;
-    Data.indexTest=indexTest;
-    Data.x=x;
-    Data.y=y;
-    Data.xI.H0=xI0;
-    Data.xI.H1=xI1;
-    Data.xP.H0=xP0;
-    Data.xP.H1=xP1;
-    Data.t=t;
+    Data.ZP.H0 = ZP0;
+    Data.ZP.H1 = ZP1;
+    Data.ZI.H0 = ZI0;
+    Data.ZI.H1 = ZI1;
+%     Data.indexTrain=indexTrain;
+%     Data.indexTest=indexTest;
+%     Data.x=x;
+    Data.g = g;
+    Data.y = y;
+    Data.xI.H0 = xI0;
+    Data.xI.H1 = xI1;
+    Data.xP.H0 = xP0;
+    Data.xP.H1 = xP1;
+    Data.t = t;
     
 end

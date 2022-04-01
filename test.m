@@ -1,11 +1,191 @@
-g
+%% Analyze the effects of the number of integral observations in NLRT on the ROC curves
+% Optimal number of observations is K = 70
+L = 6;
+sn = 0.1;
+K_lst = 10:20:10+20*(L-1);
+cell_TPR = cell(1, L);
+cell_FPR = cell(1, L);
+FigLegend = cell(1, L);
+
+for i = 1:L
+    fprintf("Iteration %d \n ", i);
+    [cell_TPR{i}, cell_FPR{i}] = FuncNLRTroc(M_lst(i), sn, printOpt, figOpt);
+    FigLegend{i}="K =" + M_lst(i);
+end
+% convert cell array to matrix for plotting
+TP = cell2mat(cell_TPR);
+FP = cell2mat(cell_FPR);
+
+% plot the ROC graph
+plotROC(TP,FP,"ROC curves against the number of integral observations K",FigLegend)
+
+
+%% Analyze the effects of the number of point observations in WGPLRT on the ROC curves
+L = 5;
+sn = 0.1;
+M_lst = 10:20:10+20*(L-1);
+cell_TPR = cell(1, L);
+cell_FPR = cell(1, L);
+FigLegend = cell(1, L);
+
+for i = 1:L
+    fprintf("Iteration %d \n ", i);
+    [cell_TPR{i}, cell_FPR{i}] = FuncWGPLRTroc(M_lst(i), sn, printOpt, figOpt);
+    FigLegend{i}="M =" + M_lst(i);
+end
+% convert cell array to matrix for plotting
+TP = cell2mat(cell_TPR);
+FP = cell2mat(cell_FPR);
+
+% plot the ROC graph
+plotROC(TP,FP,"ROC curves against the number of point observations M",FigLegend)
+%% Plot figures
+file_name = "Experiment/SyntheticExperiment/syn_result.mat"
+file = load(file_name);
+
+snr = file.snr;
+lstMSE = file.lstMSE;
+lstF1 = file.lstF1;
+lstTPR = file.lstTPR;
+lstFPR = file.lstFPR;
+
+close all
+fig = tight_subplot(1,1,[.01 .03],[.08 .07],[.04 .03])
+plot(snr,lstMSE.SBLUE,'-o','MarkerSize',10, 'LineWidth',1.5)
+hold on
+plot(snr,lstF1.SBLUE,'-d','MarkerSize',10,'LineWidth',1.5)
+hold on
+plot(snr,lstFPR.SBLUE,'-v','MarkerSize',10,'LineWidth',1.5)
+hold on 
+plot(snr,lstTPR.SBLUE,'-^','MarkerSize',10,'LineWidth',1.5)
+legend(["MSE","F1 score","FPR","TPR"], 'FontSize', 15, 'Location', 'southeast')
+xlabel("Signal-to-noise ratio (dB)",'FontSize',13)
+ylabel("Scores",'FontSize',15)
+title("MSE, F1 score, FPR, TPR against SNR",'FontSize',24)
+
+%% 
+clear all, clc, close all
+
+fig = openfig('AUCvaryingK') 
+
+a = get(gca,'Children');
+xdata = get(a, 'XData');
+ydata = get(a, 'YData');
+hLegend = findobj(gcf, 'Type', 'Legend');
+close 
+
+ax = tight_subplot(1,1,[.02 .08],[.09 .09],[.08 .02])
+plot(xdata{1,1}, ydata{1,1},'-','LineWidth',1.5)
+hold on
+plot(xdata{2,1},ydata{2,1},'--','LineWidth',1.5)
+hold off
+ylim([min(ydata{1,1}),1.05])
+legend({'$\sigma_{\mathrm{I}}$=0.01','$\sigma_{\mathrm{I}}$=0.1'},'Interpreter','latex','FontSize', 15, 'Location', 'southeast')
+xlabel("Number of Integral Observations, K",'FontSize',15)
+ylabel("Area Under Curve (AUC)",'FontSize',15)
+title("AUC against the Number of Integral Observations",'FontSize',22)
+
+
+%% 
+clear all, clc, close all
+fig = openfig('AUC_SNR.fig') 
+
+a = get(gca,'Children');
+xdata = get(a, 'XData');
+ydata = get(a, 'YData');
+hLegend = findobj(gcf, 'Type', 'Legend');
+close 
+
+ax = tight_subplot(1,1,[.02 .08],[.09 .09],[.08 .02])
+plot(xdata{1,1}, ydata{1,1},'-^','MarkerSize',10,'LineWidth',1.5)
+hold on
+plot(xdata{2,1},ydata{2,1},'-v','MarkerSize',10,'LineWidth',1.5)
+hold off
+ylim('auto')
+legend({'WGPLRT','NLRT'},'FontSize', 15, 'Location', 'southeast')
+xlabel("Signal-to-noise ratio (dB)",'FontSize',15)
+ylabel("Area Under Curve (AUC)",'FontSize',15)
+title("AUC against SNR",'FontSize',22)
+
+%% 
+clear all, clc, close all
+fig = openfig('ROC_at_OptM=66.fig') 
+
+a = get(gca,'Children');
+xdata = get(a, 'XData');
+ydata = get(a, 'YData');
+hLegend = findobj(gcf, 'Type', 'Legend');
+close 
+
+ax = tight_subplot(1,1,[.02 .08],[.09 .09],[.08 .02])
+plot(xdata{1,1}, ydata{1,1},'--r','MarkerSize',10,'LineWidth',1.5)
+hold on
+plot(xdata{2,1},ydata{2,1},'-','MarkerSize',10,'LineWidth',1.5)
+hold on 
+plot(xdata{3,1},ydata{3,1},'--','color','#0072BD','MarkerSize',10,'LineWidth',1.5)
+hold off
+ylim([0,1.05])
+legend({'y=x','NLRT','WGPLRT'},'FontSize', 15, 'Location', 'southeast')
+xlabel("False Positive Rate",'FontSize',15)
+ylabel("True Positive Rate",'FontSize',15)
+title("ROC curves when M=K=66",'FontSize',22)
+
+
+
+%% Analyze effects of the number of observations on F1 score, TPR, and FPR
+clc
+F1_SBLUE = zeros([n,1]);
+TPR = zeros([n,1]);
+FPR = zeros([n,1]);
+sn = 0.1;
+M_lst=10:10:10*n;
+for i=1:n
+    fprintf("Iteration %d\n",i);
+    [F1_SBLUE(i),TPR(i),FPR(i)] = FuncSyntheticExperiment(M_lst(i),sn,alpha,ratio,printOpt,figOpt); 
+end
+%% Plot the figure
+figure()
+plot(M_lst,F1_SBLUE,'-x')
+hold on
+plot(M_lst,FPR,'-^')
+hold on
+plot(M_lst,TPR,'-v')
+legend("F1 score","FPR","TPR")
+xlabel("M, the number of observations in LRTs")
+ylabel("Score")
+title("Scores against varying number of observations in LRTs")
+
+%% Analyze the effects of varying ratio of point and integral sensors
+sn = 0.1;
+M = 50;
+ratio_lst = [0,0.25,0.5,0.75,1];
+n=length(ratio_lst);
+F1_SBLUE = zeros([n,1]);
+TPR = zeros([n,1]);
+FPR = zeros([n,1]);
+for i=1:n
+    fprintf("Iteration %d\n",i);
+    [F1_SBLUE(i),TPR(i),FPR(i)] = FuncSyntheticExperiment(M,sn,alpha,ratio_lst(i),printOpt,figOpt); 
+end
+
+%% Plot the figure
+figure()
+plot(ratio_lst,F1_SBLUE,'-x')
+hold on
+plot(ratio_lst,FPR,'-^')
+hold on
+plot(ratio_lst,TPR,'-v')
+legend("F1 score","FPR","TPR")
+xlabel("The percentage point sensors over all senssors")
+ylabel("Score")
+title("Scores against varying percentage of point sensors")
 
 %%
 mu = 2;
 sigma = 3;
-N = 100000;
+N = 10000000;
 g = mu + sigma * randn(N, 1);
-c = 1;
+c = 6;
 index = g > c;
 emp_exp = sum((g(index) - mu)./sigma.^2)/length(index);
 formula = exp(-(c-mu)^2/2/sigma^2)/sqrt(2*pi)/sigma;

@@ -1,3 +1,51 @@
+
+%% SBLUE vs significance level [doable but not efficient]
+alpha_lst = 0.01:0.05:0.5;
+M = 19;
+snP = 0.1;
+L = length(alpha_lst);
+MSE = cell(L, 1);
+F1 = cell(L, 1);
+TPR = cell(L, 1);
+FPR = cell(L, 1);
+Options.VaryParameter = 3; % change significance level of LRT
+
+for i = 1 : L
+    modelHyp = struct("T", T, "M", M, "K", K, "snI", snI, "snP", snP, ...
+        'ratio', ratio, 'alpha', alpha_lst(i));
+    [MSE{i}, F1{i}, TPR{i}, FPR{i}] = averageScore(modelHyp, Options, N);
+end
+
+lstMSEsig = expandCell(MSE);
+lstF1sig = expandCell(F1);
+lstTPRsig = expandCell(TPR);
+lstFPRsig = expandCell(FPR);
+%% store the values
+save(file_name, 'alpha_lst','lstMSEsig', 'lstF1sig','lstTPRsig', 'lstFPRsig','-append')
+
+%% MSE, F1score, FPR, TPR vs number of observations
+M_lst = 19:19:133;
+L = length(M_lst) ;
+MSE = cell(L, 1);
+F1 = cell(L, 1);
+TPR = cell(L, 1);
+FPR = cell(L, 1);
+
+for i = 1 : L
+    modelHyp = struct("T", T, "M", M_lst(i), "K", K, "snI", snI, "snP",...
+        snP, 'ratio', ratio,'alpha', alpha);
+    [MSE{i}, F1{i}, TPR{i}, FPR{i}] = averageScore(modelHyp, Options, N);
+    fprintf("Iteration %d\n", i)
+end
+
+lstMSE = expandCell(MSE);
+lstF1 = expandCell(F1);
+lstTPR = expandCell(TPR);
+lstFPR = expandCell(FPR);
+
+%% store the values
+save(file_name, 'lstMSE', 'lstF1','lstTPR', 'lstFPR','-append')
+
 %% get points inside Singapore
 xv = S.X;
 yv = S.Y;
@@ -263,8 +311,6 @@ clc, close all, clear all
 %%
 S = shaperead('landareas', 'UseGeoCoords', true,...
   'Selector',{@(name) strcmp(name,'Australia'), 'Name'});
-
-
 
 ltlim = [min(S.Lat) max(S.Lat)] + [-1 1];
 lnlim = [min(S.Lon) max(S.Lon)] + [-1 1];

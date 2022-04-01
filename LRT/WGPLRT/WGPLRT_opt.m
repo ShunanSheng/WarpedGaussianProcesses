@@ -18,8 +18,6 @@ function LRT=WGPLRT_opt(H0,H1,warpinv,t,x0,snP)
     lb1 = hyp1.lb;ub1 = hyp1.ub;
     
     pd0=hyp0.dist;pd1=hyp1.dist;
-%     covfunc0 = {H0.covfunc};
-%     covfunc1 = {H1.covfunc};
     covfunc0 = H0.covfunc;
     covfunc1 = H1.covfunc;
     
@@ -62,9 +60,9 @@ function LRT=WGPLRT_opt(H0,H1,warpinv,t,x0,snP)
         warning("A1 is not p.s.d.")
     end
     
-    
-    B0logdet = sum(log(diag(A0_eigval) + snP^2));
-    B1logdet = sum(log(diag(A1_eigval) + snP^2));
+    % the place of change
+    B0logdet = sum(log(diag(A0_eigval) + snP^(-2)));
+    B1logdet = sum(log(diag(A1_eigval) + snP^(-2)));
     
     Cinv0 = diag(sqrt(1 ./ ((1 ./ diag(A0_eigval)) + snP^2))) * A0_eigvec';
     Cinv1 = diag(sqrt(1 ./ ((1 ./ diag(A1_eigval)) + snP^2))) * A1_eigvec';

@@ -20,7 +20,7 @@ function [Qval,vhat,A]=LaplaceApproximation(pd,Kinv,warpinv,x0,lb,ub)
     Qneg=@(x) -Q(x);
     
     if isempty(lb) && isempty(ub)
-        options=optimoptions('fminunc','Display','off');
+        options=optimoptions('fminunc','Display','iter');
         [vhat,Qnval] = fminunc(Qneg,x0,options);
     else
         % Use Interior point to find the mode and maximum value of Q

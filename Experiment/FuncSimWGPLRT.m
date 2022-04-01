@@ -93,7 +93,7 @@ logGamma=optLogGamma; % compute for n values with nhat observations in one batch
 yhat=WGPLRT_pred(ZP,LRT,logGamma);
 [tp,fp]=confusionMat(yn,yhat);
 if printOpt==true
-disp("At significance level="+alpha+", the optlogGamma="+logGamma+", tp="+tp+",fp="+fp);
+    disp("At significance level="+alpha+", the optlogGamma="+logGamma+", tp="+tp+",fp="+fp);
 end
 
 

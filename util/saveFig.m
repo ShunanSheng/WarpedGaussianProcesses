@@ -7,6 +7,13 @@ function saveFig(rootdir, format)
     for i = 1 : nfiles
         figname = extractBetween(d(i).name, '','.');
         fig = openfig(d(i).name,'invisible');
-        saveas(fig,strcat(figname{:}, format));   
+        if strcmp(format,'.eps')
+            set(gcf,'renderer','Painters')
+            saveas(fig,strcat(figname{:}, format));   
+            print('-depsc','-tiff','-r300',strcat(figname{:},'.eps'));
+        else
+            saveas(fig,strcat(figname{:}, format));  
+        end
+            
     end
 end

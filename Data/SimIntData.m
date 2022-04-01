@@ -16,21 +16,21 @@ function ZI=SimIntData(hyp,C,mu, warpfunc,K,kw,snI,nI)
     % ZI : the integral observations
 
     % parameters
-    T=hyp.t;
-    n=kw*K;
-    dt=T/K/kw;
+    T = hyp.t;
+    n = kw*K;
+    dt = T/K/kw;
     
     % compute in batch if memory overflows
     
     % Define the latent Gaussian Process
     f = C'*randn(n, nI) + mu;
     % Define the warped Gaussian Process
-    z=warpfunc(hyp.dist,f);
+    z = warpfunc(hyp.dist,f);
     
-    ZI=zeros(K,nI);
+    ZI = zeros(K,nI);
     for i=1:K
-        ZI(i,:)=SimpsonRule(z((i-1)*kw+1:i*kw,:),dt);
+        ZI(i,:) = SimpsonRule(z((i-1)*kw+1:i*kw,:),dt);
     end
-    ZI=ZI+snI*randn(K,nI);
+    ZI = ZI+snI*randn(K,nI);
     
 end
