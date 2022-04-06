@@ -41,4 +41,4 @@ Please refer to the paper for the detailed results.
 [e05]: Experiment/test_SBLUE.m
 
 ## Disclaimer
-During the implementation of the codes, we use the GPML package 
+During the implementation of the codes, we use the GPML package provided by Carl Edward Rasmussen & Hannes Nickisch, which is accessible on http://gaussianprocess.org/gpml/code/matlab/doc/.
