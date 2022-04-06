@@ -2,7 +2,6 @@ function result=SimpsonRule(z,dt)
     % Use Simpson's rule to evaluate the integral integral z dt over
     % [(k-1)*T/K, k*T/K]
     
-    
     % Input: 
     % z : function values in matrix form kw*K x nI
     % dt : step size

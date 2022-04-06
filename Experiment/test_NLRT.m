@@ -1,7 +1,5 @@
 %%% Test for NLRT on the simulated data
-
 clear all,close all,clc
-
 %%% Setup for Temporal processes
 %%% H0 Null hypothesis
 meanfunc0 = @meanConst; 
@@ -34,8 +32,6 @@ pd1 = makedist("g_and_h","g",0.1,"h",0.4,'loc',1,'sca',1)
 
 %%% Parameters for the sensor network
 T=20; K=50; snI=0.1; 
-
-
 
 % lb, ub is only used for WGPLRT, however for completeness of the
 % initialization process, we inclide lb/ub here
@@ -71,7 +67,7 @@ C1 = chol(feval(covfunc1{:}, hyp1.cov, x)+1e-9*eye(n));
 mu1 = meanfunc1( hyp1.mean, x);
 
 % the integral observations
-ZI=SimFastIntData(hyp0,hyp1,C0,C1,mu0,mu1,warpfunc,K,kw,snI,n0,n1);
+ZI = SimFastIntData(hyp0,hyp1,C0,C1,mu0,mu1,warpfunc,K,kw,snI,n0,n1);
 
 %% NLRT ROC curve constants
 clc;
@@ -82,7 +78,7 @@ sumstats=@(z) summaryAuto(z,4);
 d=@distEuclid; % distance metric
 J=10000; % number of samples per hypothesis
 
-[ZI0,ZI1]=NLRT_gene(hyp0,C0,mu0,hyp1,C1,mu1, warpfunc,K,kw,snI,J); % generate J samples of integral observations from null ...
+[ZI0,ZI1] = NLRT_gene(hyp0,C0,mu0,hyp1,C1,mu1, warpfunc,K,kw,snI,J); % generate J samples of integral observations from null ...
                                                                    % and alternative hypothesis
 
 %% Plot ROC
@@ -106,11 +102,11 @@ for i=1:M
         end
     end
 end
-avergeTime=toc/M
+avergeTime = toc/M
 
 % plot the ROC graph
 close all;
-FigLegend=cell(M,1);
+FigLegend = cell(M,1);
 for i=1:M
    % create legends representing delta
    FigLegend{i}="delta="+Delta(i); 
@@ -137,10 +133,10 @@ plotROC(TP,FP,"ROC:NLRT","delta="+optDelta)
 %% find the optimal logGammadelta=0.1;alpha=0.1;
 delta = 0.1;
 alpha = 0.1;
-optlogGamma=NLRT_opt_logGamma(hyp0,C0,mu0,ZI0,ZI1,warpfunc,sumstats,d,K,kw,snI,delta,alpha)
+optlogGamma = NLRT_opt_logGamma(hyp0,C0,mu0,ZI0,ZI1,warpfunc,sumstats,d,K,kw,snI,delta,alpha);
 
 %% The performance at the opt_logGamma
-Lambda=NLRT_pred_delta(D0,D1,delta);
+Lambda = NLRT_pred_delta(D0,D1,delta);
 % optlogGamma=0;
-yhat=NLRT_pred_gamma(Lambda,optlogGamma); % Compute yhat given delta and logGamma
-[tp,fp]=confusionMat(yn,yhat)
+yhat = NLRT_pred_gamma(Lambda,optlogGamma); % Compute yhat given delta and logGamma
+[tp,fp] = confusionMat(yn,yhat);

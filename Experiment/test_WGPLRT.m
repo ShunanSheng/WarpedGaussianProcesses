@@ -44,14 +44,8 @@ pd1=makedist('Gamma','a',20.3009,'b',0.418466)
 % pd1 = makedist("g_and_h","g",0.1,"h",0.1,'loc',0,'sca',2)
 
 %%% Parameters for the sensor network
-% T=20; M=50; snP=0.1; 
-% T = 19 * 7;
-% M = 19 * 7;
-T = 7;
-M = 7;
-snP = 0.1;
+T=20; M=50; snP=0.1; 
 % each point observation zP is of size Mx1 with noise ~ N(0,snP^2I)
-
 
 %%% Lower/upper bound for optimization in Laplace Approximation,i.e. the range of W
 % warpdist0="Normal";warpdist1="Normal";
@@ -119,8 +113,6 @@ end
 
 plotROC(TP,FP)
 
-% save('TP.mat','TP')
-% save('FP.mat','FP')
 %% Locating the LRT threshold
 
 alpha=0.1; % significance Level

@@ -1,4 +1,6 @@
 function plotVector(x,Xtitle,Xlegend)
+    % Given a vector x and x label and legend
+    % plot x versus (1:length(x))
     if ~exist('Xtitle', 'var')||isempty(Xtitle)
         Xtitle = "Plot of x";
     end

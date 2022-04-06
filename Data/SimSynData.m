@@ -1,5 +1,5 @@
 function Data=SimSynData(SP,H0,H1,warpfunc_sp, warpfunc, modelHyp, locHyp)
-    % Generate a test dataset 
+    % Generate a test dataset for the synthetic experiment
     %
     % Input: 
     % SP : paramaters for the spatial process
@@ -46,8 +46,6 @@ function Data=SimSynData(SP,H0,H1,warpfunc_sp, warpfunc, modelHyp, locHyp)
     % Generate the lantent binary spatial field
     g = SimGP(hyp,meanfunc,covfunc,x);
     y = warpfunc_sp(hyp.thres,g);
-%     y = SimWGP(hyp,meanfunc,covfunc,warpfunc_sf,x);
-    
 
     % The indexes of point sensors and integral sensors
     
@@ -107,9 +105,6 @@ function Data=SimSynData(SP,H0,H1,warpfunc_sp, warpfunc, modelHyp, locHyp)
     Data.ZP.H1 = ZP1;
     Data.ZI.H0 = ZI0;
     Data.ZI.H1 = ZI1;
-%     Data.indexTrain=indexTrain;
-%     Data.indexTest=indexTest;
-%     Data.x=x;
     Data.g = g;
     Data.y = y;
     Data.xI.H0 = xI0;

@@ -53,7 +53,6 @@ long_rep = str2double(strrep(split(long_lst,'°'),"'",''));
 long = long_rep(:,1) + long_rep(:,2)./60;
 stns_loc = horzcat(long, lat);
 
-
 %% fit the spatial field
 % set the prior for the Gaussian spatial field
 meanfunc = @meanConst; hyp.mean = mean(Data_ave_week,'all');
@@ -77,7 +76,6 @@ hyp_lst.lik = zeros(nweeks, 1);
 
 for i = 1:nweeks
     hyp2 = minimize(hyp, @gp, -500, inf, meanfunc, covfunc, likfunc, X , Data_ave_week(i,:)');
-%     nlml = gp(hyp2, @infGaussLik, meanfunc, covfunc, likfunc, stns_loc, Data_ave_week(i,:)')
     hyp_lst.mean(i) = hyp2.mean;
     hyp_lst.logell(i) = hyp2.cov(1);
     hyp_lst.logsf(i) = hyp2.cov(2);
@@ -90,42 +88,37 @@ hyp_final.cov(1) =median(hyp_lst.logell);
 hyp_final.cov(2) = median(hyp_lst.logsf);
 hyp_final.lik = median(hyp_lst.lik);
 hyp_final.thres = median(reshape(Data_ave_week,[],1));
-hyp_final
-exp(hyp_final.cov)
-
 %% save spatial hyperparameters
-
-file_name = "Experiment/SemiSyntheticExperiment/spatial_hyper.mat";
+file_name = "Experiment/SemiSyntheticExperiment/Results/spatial_hyper.mat";
 save(file_name,"hyp_final","stns_loc");
 
 %% plot stations
 if figOpt == true
       close all
-%       figure('Position',[100,100,400,300])
-%       tight_subplot(1,1,[.01 .03],[.065 .06],[.08 -0.5])
-%       gx = geoaxes;
-%       geoscatter(gx, [lat(:)],[long(:)],'r','^')
-%       geobasemap(gx,'streets-light')
-%       text(gx, [lat(:)]+ 0.003,[long(:)]+0.003,stns_data.StnNo,'FontSize',12)
-%       gx.LongitudeLabel.FontSize = 15; 
-%       gx.LatitudeLabel.FontSize = 15; 
-%       title("Geographical locations of weather stations",'FontSize',20)
+      figure('Position',[100,100,400,300])
+      tight_subplot(1,1,[.01 .03],[.065 .06],[.08 -0.5])
+      gx = geoaxes;
+      geoscatter(gx, [lat(:)],[long(:)],'r','^')
+      geobasemap(gx,'streets-light')
+      text(gx, [lat(:)]+ 0.003,[long(:)]+0.003,stns_data.StnNo,'FontSize',12)
+      gx.LongitudeLabel.FontSize = 15; 
+      gx.LatitudeLabel.FontSize = 15; 
+      title("Geographical locations of weather stations",'FontSize',18)
 
         % QQplot
       figure('Position',[100,100,400,300])
-      tight_subplot(1,1,[.01 .03],[.065 .06],[.11 0.01])
+      tight_subplot(1,1,[.01 .03],[.12 .06],[.11 0.01])
       qqplot(reshape(Data_ave_week,[],1))
       grid on 
-      title("Q-Q plot of average weekly Relative Humidity",'FontSize',22)
+      title("Q-Q plot of average weekly Relative Humidity",'FontSize',16)
       xlabel('Standard Normal Quantiles','FontSize',15)
       ylabel('Quantiles of Input Sample','FontSize',15)
 
-      histogram
       figure('Position',[100,100,400,300])
-      tight_subplot(1,1,[.01 .03],[.065 .04],[.11 .01])
+      tight_subplot(1,1,[.01 .03],[.12 .09],[.11 .01])
       histogram(reshape(Data_ave_week,[],1))
       grid on
-      title("Histogram of average weekly Relative Humidty",'FontSize',22)
+      title("Histogram of average weekly Relative Humidty",'FontSize',16)
       xlabel('Average weekly Relative Humidty (%)','FontSize',15)
       ylabel('Frequency','FontSize',15)
 end

@@ -1,7 +1,7 @@
 function y=binmcdf(XU,mu,Sigma)
     % A simplied version of Matlab function mvncdf without using the
     % statset and other fexible inputs
-    % Evaluate cdf of a bivariate normal with mean mu and Variance Sigma
+    % Evaluate cdf of a bivariate normal with mean mu and variance Sigma
     % such that P(x1<=X1,x2<=X2)
  
     tol=1e-8;

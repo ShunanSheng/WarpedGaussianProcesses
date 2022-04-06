@@ -47,8 +47,8 @@ warpfunc = @(pd,p) invCdf(pd,p);
 warpinv = @(pd,p) invCdfWarp(pd,p);
 warpfunc_sp = @(c,x) indicator(c,x); % the warping function of the binary spatial field is the indicator function
 
-if exist('Experiment/SyntheticExperiment/SpatialLocation.mat','file')
-    file = load('Experiment/SyntheticExperiment/SpatialLocation.mat');
+if exist('Experiment/SyntheticExperiment/Results/SpatialLocation.mat','file')
+    file = load('Experiment/SyntheticExperiment/Results/SpatialLocation.mat');
     x = file.x;
     indexTrain = file.indexTrain;
     indexTest = file.indexTest;
@@ -65,7 +65,7 @@ else
     % The index of training and test data
     indexTrain = randperm(N,floor(N/10))'; % index of training locations
     indexTest = setdiff(1:N,indexTrain)'; % index of test locations
-    save('Experiment/SyntheticExperiment/SpatialLocation.mat','x','indexTrain','indexTest');
+    save('Experiment/SyntheticExperiment/Results/SpatialLocation.mat','x','indexTrain','indexTest');
 end
 
 locHyp = struct('x',x,'indexTrain',indexTrain, 'indexTest',indexTest);
@@ -96,7 +96,7 @@ xI0 = Data.xI.H0;
 xI1 = Data.xI.H1;
 
 %% Offline phase
-root = "Experiment/SyntheticExperiment/syn_offline_";
+root = "Experiment/SyntheticExperiment/Results/syn_offline_";
 if Options.VaryParameter == 1
    file_name = strcat(root, 'M_',num2str(M),".mat");
 elseif Options.VaryParameter == 2
@@ -289,5 +289,4 @@ if figOpt
     legend(["reconstructed binary spatial field",'sensor locations'],'Location','southeast','FontSize',15)
     title("The Reconstructed Binary Spatial Field",'FontSize',20)
 end
-
 end

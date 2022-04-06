@@ -17,6 +17,8 @@ else
     [hyp0, hyp1] = FitTemporalProcess(figOpt);
 end
 
+fprintf("Load spatial and temporal hyperparameters successfully!\n")
+
 %% spatial field
 meanfunc = @meanConst; 
 covfunc = {@covMaterniso, 5};
@@ -40,7 +42,6 @@ snP = modelHyp.snP; % signal noise of point sensors
 snI = modelHyp.snI; % signal noise of integral sensors
 ratio = modelHyp.ratio; % percentage of point sensors over all sensors
 alpha = modelHyp.alpha; % the significance level for LRT
-
 
 % lower/upper bound for optimization in Laplace Approximation,i.e. the range of W
 warpdist0 = 'Gamma';warpdist1 = "Gamma";
@@ -83,7 +84,6 @@ X = [xSp,ySp];
 % assume all sensors are point sensors, i.e., integral sensors = []
 % the tranining data are the observations from the 21 sensors
 indexTrain = (nx * ny + 1 : size(X, 1))';
-% indexTrain = [1:50:2500, (nx * ny + 1 : size(X, 1))]';
 indexTest = setdiff(1:size(X,1), indexTrain)';
 
 % partition the training and test data
@@ -95,7 +95,6 @@ Xtest=X(indexTest,:);
 % rng("default")
 g = SimGP(hyp_sp,meanfunc,covfunc,X);
 Y = warpfunc_sp(c,g);
-% Y = SimWGP(hyp_sp,meanfunc,covfunc,warpfunc_sp,X);
 
 Ytrain=Y(indexTrain);
 Ytest=Y(indexTest);
@@ -131,7 +130,7 @@ ZP1 = SimPtData(hyp1,CP1,muP1,warpfunc,t,snP,nP1);
 
 %% offline: get LRT and SBLUE prep
 % load offline parameters if available
-root = "Experiment/SemiSyntheticExperiment/semisyn_offline_";
+root = "Experiment/SemiSyntheticExperiment/Results/semisyn_offline_";
 if Options.VaryParameter == 1
    file_name = strcat(root, 'M_',num2str(M),".mat");
 elseif Options.VaryParameter == 2
@@ -149,6 +148,7 @@ if exist(file_name,'file')
     wfp = load(file_name).wfp;
     logGammaP = load(file_name).logGammaP;
     SBLUEprep = load(file_name).SBLUEprep;
+    fprintf("Load offline parameters !\n")
 else
     fprintf("Compute offline parameters !\n")
     % run Laplace approximation
@@ -163,7 +163,7 @@ else
     save(file_name,'LRT','wtp','wfp','logGammaP','SBLUEprep');
 end
 
-
+fprintf("Start online computation !\n")
 %% online: WGPLRT
 % predict the value of the spatial random field for sensors
 yhat_pt_0 = WGPLRT_pred(ZP0,LRT,logGammaP); 
@@ -176,8 +176,6 @@ Yhat(xP1) = yhat_pt_1;
 % collect the predictions 
 Ytrain_hat  = Yhat(indexTrain);
 [TPR.Train, FPR.Train] = confusionMat(Ytrain_hat,Ytrain);
-% fprintf("Train MSE %5.4f \n ", sum((Ytrain_hat-Ytrain).^2)/21);
-
 %% online : SBLUE
 % construct transition matrices for all sensors
 liP = ismember(indexTrain,xP);  % the locations of the point observations (using WGPLRT)
@@ -229,7 +227,6 @@ F1.KNN = F1score(Ytest,Ypred_KNN);
 %% plot the heatmap
 if figOpt
     close all
-     
     [fmask, vmask] = maskPatch(S);
     z_risk = reshape(Risk_SBLUE, [ny, nx]); 
     figure('Position',[100,100,400,300])

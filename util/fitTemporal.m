@@ -27,8 +27,7 @@ function [pd, hyp2] = fitTemporal(temp_process, distname)
         x = (1:length(gp_temp))';
         
         hyp2 = minimize(hyp, @gp, -500, inf, meanfunc, covfunc, likfunc, x, gp_temp);
-%         [nlml, dnlZ] = gp(hyp2, @infGaussLik, meanfunc, covfunc, likfunc, x, gp_temp);
-
+        
     % if the input is a cell, define a new gp function for cell, with Z, dZ
     % being sum of all cells
     elseif isa(temp_process, 'cell')

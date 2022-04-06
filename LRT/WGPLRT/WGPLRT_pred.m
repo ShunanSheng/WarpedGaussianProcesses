@@ -1,6 +1,4 @@
-% Improved version
 function yhat=WGPLRT_pred(ZP,LRT,logGamma)
-
     % Compute the predictor given the real data zP
     % For zP of large size, we evaluate the LRT in batches to avoid memory
     % overflow

@@ -8,7 +8,7 @@ function SBLUEprep=SBLUE_stats_prep(covfunc,meanfunc,hyp,Xtrain,xstar)
         % Xtrain: the location of existing sensors
         % xstar : the location of precidtion
         
-        % Outpute : SBLUE prep
+        % Outpute : SBLUE prep (a structure storing the computed data)
     
         N=size(Xtrain,1);
         mu=meanfunc(hyp.mean, Xtrain);

@@ -1,6 +1,7 @@
 %% evaluation of the semi-synthetic experiment 
 clc, clear all, close all
-file_name = "Experiment/SemiSyntheticExperiment/semisyn_result.mat";
+root = "Experiment/SemiSyntheticExperiment/Results/semisyn_offline_";
+file_name = "Experiment/SemiSyntheticExperiment/Results/semisyn_result.mat";
 % parameters for the sensor network, physical meaning is lost
 T = 19 * 7; % time period for temporal processes [0, T]
 M = 19 * 7; % number of point observations, take observation at the end of 
@@ -12,7 +13,6 @@ alpha = 0.1;
 modelHyp = struct("T", T, "M", M, "K", K, "snI", snI, "snP", snP, 'ratio', ratio, 'alpha', alpha);
 Options = struct("figOpt", false, "printOpt", false, "VaryParameter", 1);
 N = 100;
-root = "Experiment/SemiSyntheticExperiment/semisyn_offline_";
 %% compute the average F1 score and MSE
 MSE = cell(N, 1);
 F1 = cell(N, 1);
@@ -30,7 +30,7 @@ aveFPR = aveCell(FPR);
 %% store the values
 save(file_name, 'aveMSE', 'aveF1', 'aveTPR', 'aveFPR','-append')
 
-%%  MSE, F1score, FPR, TPR vs snP
+%% MSE, F1score, FPR, TPR vs snP
 snP2_lst = [25:-4:1, 0.25];
 snP_lst = sqrt(snP2_lst);
 N = 100;
@@ -131,7 +131,6 @@ L = length(M_lst);
 FPR = cell(L,1);
 TPR = cell(L,1);
 AUC_lst = cell(L, 1);
-%%
 for i = 1 : L
     f_name = strcat(root, 'M_',num2str(M_lst(i)),".mat");
     if exist(f_name,'file')
@@ -144,10 +143,9 @@ for i = 1 : L
     fprintf("Iteration %d\n",i)
 end
 AUC_lst_WGPLRT = expandCell(AUC_lst).WGPLRT;
-
 %% store the values
-file_name = "Experiment/SemiSyntheticExperiment/semisyn_result.mat"
-save(file_name, 'M_lst', 'AUC_lst_WGPLRT', 'TPR', 'FPR', '-append')
+file_name = "Experiment/SemiSyntheticExperiment/semisyn_result.mat";
+save(file_name, 'M_lst', 'AUC_lst_WGPLRT', 'TPR', 'FPR', '-append');
 %% plot
 close all
 figure('Position',[100,100,400,300])
@@ -172,7 +170,6 @@ legend({'WGPLRT','y=x'},'FontSize', 15, 'Location', 'southeast')
 xlabel("False Positive Rate",'FontSize',15)
 ylabel("True Positive Rate",'FontSize',15)
 title("ROC curves when M=133",'FontSize',20)
-
 
 %% SBLUE along the ROC of WGPLRT
 if exist('spatial_hyper.mat','file')
@@ -322,6 +319,7 @@ SBLUE.FP = FP;
 SBLUE.TP = TP;
 SBLUE.MSE = MSE;
 save(file_name, 'SBLUE', '-append')
+
 %% plot
 figure('Position',[100,100,400,300])
 tight_subplot(1,1,[.01 .03],[.117 .09],[.105 .03])
