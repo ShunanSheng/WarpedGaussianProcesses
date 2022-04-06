@@ -32,8 +32,6 @@ Please refer to the paper for the detailed results.
 | 4   | Test for SBLUE                                  | [src][e05] | 
  
 
-
-
 [e01]: Experiment/SyntheticExperiment/synthetic_experiment.m
 [e02]: Experiment/SemiSyntheticExperiment/semi_synthetic_experiment.m
 [e03]: Experiment/test_WGPLRT.m
