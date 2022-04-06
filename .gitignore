@@ -3,7 +3,8 @@
 
 # Windows default autosave extension
 *.asv
-
+# Figures 
+*.eps
 # OSX / *nix default autosave extension
 *.m~
 
