@@ -1,5 +1,12 @@
 # Warped Gaussian Process Classfication
+[update on 06 April 2022]: include synthetic and real-world (semisynthetic) experiments; clean up codes.
 [update on 06 Oct 2021]: include the g_and_h distribution into makedist, allowing SBLUE to take different transition matrix at each sensor.
+
+
+## Dataset 
+The weather dataset from NEA Singapore for the real-world experiments was retrived from https://data.gov.sg/search?groups=environment on 7 Jan 2022.
+The Singapore boundary file (.shp) was retrieved from https://maps.princeton.edu/catalog/stanford-pg798kr1205 on 20 Jan 2022.
+
 
 
 ## Experiment
@@ -17,16 +24,18 @@ To test the efficacy of individual algorithms, we also conduct experiments on WG
 
 | No. | Description                                     | Code       |
 | --- | ----------------------------------------------- | ---------- | 
-| 1   | Test on Synthetic Dataset                       | [src][e01] | 
-| 2   | Test for WGPLRT                                 | [src][e02] | 
-| 3   | Test for NLRT                                   | [src][e03] | 
-| 4   | Test for SBLUE                                  | [src][e04] | 
+| 1   | Synthetic Experiments                           | [src][e01] |
+| 1   | Real-world Experiments                          | [src][e02] | 
+| 2   | Test for WGPLRT                                 | [src][e03] | 
+| 3   | Test for NLRT                                   | [src][e04] | 
+| 4   | Test for SBLUE                                  | [src][e05] | 
  
 
 
 
-[e01]: Experiment/test_Synthetic_Data.m
-[e02]: Experiment/test_WGPLRT.m
-[e03]: Experiment/test_NLRT.m
-[e04]: Experiment/test_SBLUE.m
-[e08]:fig
+[e01]: Experiment/SyntheticExperiment/synthetic_experiment.m
+[e02]: Experiment/SemiSyntheticExperiment/semi_synthetic_experiment.m
+[e03]: Experiment/test_WGPLRT.m
+[e04]: Experiment/test_NLRT.m
+[e05]: Experiment/test_SBLUE.m
+
