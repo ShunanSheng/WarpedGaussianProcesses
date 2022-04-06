@@ -18,18 +18,15 @@ MSE = cell(N, 1);
 F1 = cell(N, 1);
 TPR = cell(N, 1);
 FPR = cell(N, 1);
-
 for i = 1 : N
     [MSE{i}, F1{i}, TPR{i}, FPR{i}]  = FuncSemiSyntheticExperiment(modelHyp, Options);
     fprintf("Iteration %d\n", i)
 end
 
-%%
-aveMSE = aveCell(MSE)
-aveF1 = aveCell(F1)
-aveTPR = aveCell(TPR)
-aveFPR = aveCell(FPR)
-
+aveMSE = aveCell(MSE);
+aveF1 = aveCell(F1);
+aveTPR = aveCell(TPR);
+aveFPR = aveCell(FPR);
 %% store the values
 save(file_name, 'aveMSE', 'aveF1', 'aveTPR', 'aveFPR','-append')
 
@@ -58,6 +55,7 @@ lstFPRsn = expandCell(FPR);
 
 %% store the values
 save(file_name, 'snP_lst','lstMSEsn', 'lstF1sn','lstTPRsn', 'lstFPRsn','-append')
+
 %% plot
 close all
 figure('Position',[100,100,400,300])
@@ -208,9 +206,7 @@ X = [xSp,ySp];
 
 % partition the tranining and test index
 % assume all sensors are point sensors, i.e., integral sensors = []
-% the tranining data are the observations from 21 sensors
 indexTrain = (nx * ny + 1 : size(X, 1))';
-% indexTrain = [1:50:2500, (nx * ny + 1 : size(X, 1))]';
 indexTest = setdiff(1:size(X,1), indexTrain)';
 
 % partition the training and test data
@@ -227,8 +223,7 @@ Ytest=Y(indexTest);
 % initialize an empty prediction array
 Yhat=zeros(size(X,1),1); 
 
-% get locations of point senosrs with value of the spatial random field being 0
-% and 1
+% get locations of point senosrs with value of the spatial random field being 0 and 1
 Ntrain = length(indexTrain);
 xP = indexTrain(1:Ntrain);
 xP0= xP(Y(xP)==0);
@@ -246,8 +241,7 @@ nI1=length(xI1);
 liP = ismember(indexTrain,xP);  % the locations of the point observations (using WGPLRT)
 liI = ismember(indexTrain,xI);  % the locations of the integral observations (using NLRT)
 
-%%
-% select the valid range of FPR, TPR
+%% Get the ROC curve of WGPLRT
 M = 133;
 f_name = strcat(root, 'M_',num2str(M),".mat");
 if exist(f_name,'file')
@@ -257,13 +251,13 @@ if exist(f_name,'file')
 else
     error("The file does not exist")
 end
-
-%%
-st = find(FP_lst > 0, 1,'first')
-ed = find(FP_lst == 1, 1,'first')
+% select the valid range of FPR, TPR
+st = find(FP_lst > 0, 1,'first');
+ed = find(FP_lst == 1, 1,'first');
 TP = TP_lst(st : ed - 1);
 FP = FP_lst(st : ed - 1);
 
+%% Compute MSE via Monte-Carlo Methods
 L = length(FP);
 MSE = zeros(L,1);
 FPR = zeros(L,1);
@@ -323,30 +317,19 @@ for i=1:L % We expect when rho is extreme, i.e. close to 0 or 1
         fprintf("Iteration %d, tp=%4.2f, fp=%4.2f, MSE=%4.2f\n",i,tp, fp, MSE(i));
     end
 end
-
-%% plot
-close 
-% fig = tight_subplot(1,1,[.01 .03],[.09 .07],[.08 .03])
-% plot(FP, MSE, 'LineWidth', 1.5)
-% grid on 
-% title("MSE of SBLUE against significance level",'FontSize',22)
-% xlabel("Significance level",'FontSize',15)
-% ylabel("Mean-square-error",'FontSize',15)
-
-
-fig = tight_subplot(1,1,[.01 .03],[.09 .07],[.08 .03])
-scatter(TP - FP, MSE, 'LineWidth', 1.5)
-grid on 
-title("MSE of SBLUE agaisnt TPR - FPR",'FontSize',22)
-xlabel("TPR - FPR",'FontSize',15)
-ylabel("Mean-square-error",'FontSize',15)
-
-
-%%
-SBLUE.TP = TP;
+%% save the results
 SBLUE.FP = FP;
+SBLUE.TP = TP;
 SBLUE.MSE = MSE;
-save(file_name, "SBLUE", '-append')
+save(file_name, 'SBLUE', '-append')
+%% plot
+figure('Position',[100,100,400,300])
+tight_subplot(1,1,[.01 .03],[.117 .09],[.105 .03])
+plot(SBLUE.FP, SBLUE.MSE, 'LineWidth', 1.5)
+grid on 
+title("MSE of S-BLUE against significance level",'FontSize',18)
+xlabel("Significance level",'FontSize',15)
+ylabel("Mean-square-error",'FontSize',15)
 
 %% function utilities
 function C_final = aveCell(C)
