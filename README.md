@@ -1,7 +1,7 @@
 # Binary Spatial Random Field Reconstruction from Non-Gaussian Inhomogeneous Time-series Observations
 
 ## Paper
-The paper can be accessed on arXiv: https://arxiv.org/abs/2204.03343.
+The paper can be accessed on ArXiv: https://arxiv.org/abs/2204.03343.
 
 
 ## Dataset 
