@@ -1,10 +1,7 @@
 # Binary Spatial Random Field Reconstruction from Non-Gaussian Inhomogeneous Time-series Observations
-[update on 06 April 2022]: include synthetic and real-world (semisynthetic) experiments; clean up codes.
-
-[update on 06 Oct 2021]: include the g_and_h distribution into makedist, allowing SBLUE to take different transition matrix at each sensor.
 
 ## Paper
-Put on the ArXiv Link:
+The paper can be accessed on arXiv: https://arxiv.org/abs/2204.03343.
 
 
 ## Dataset 
