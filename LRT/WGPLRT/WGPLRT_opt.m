@@ -1,5 +1,5 @@
 % Improved version
-function LRT=WGPLRT_opt(H0,H1,warpinv,t,x0,snP)
+function LRT = WGPLRT_opt(H0,H1,warpinv,t,x0,snP)
     % Conduct Warped Gaussian Process LRT given the point observations
     %
     % Input: 

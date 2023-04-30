@@ -9,7 +9,7 @@ function yhat=WGPLRT_pred(ZP,LRT,logGamma)
     %
     % Ouput: yhat
     
-    nhat=10000; % The batch size 
+    nhat=1000; % The batch size 
     n=size(ZP,2);
     nbatch=ceil(n/nhat); % The number of batches
     

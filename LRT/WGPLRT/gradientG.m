@@ -1,6 +1,6 @@
 function dG=gradientG(pd,G,v)
     % Compute the gradient of function G=inverse of invCDF warping W at v
-    % G(x)=invNormCdf(cdfPd(x))
+    % G(x)= invNormCdf(cdfPd(x))
     % Input:
     % pd: the probabilty distribution
     % G : the inverse warping function handle 
