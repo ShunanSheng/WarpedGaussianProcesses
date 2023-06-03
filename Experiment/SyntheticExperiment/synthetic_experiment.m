@@ -32,8 +32,8 @@ aveFPR = aveCell(FPR);
 %% save results
 save(file_name, 'aveMSE', 'aveF1','aveTPR','aveFPR','-append')
 
-%% Experiment 1 - Analyze the effects of the noise variance on F1 score, MSE, TPR, and FPR
-N = 20;
+%% Experiment 2 - Analyze the effects of the noise variance on F1 score, MSE, TPR, and FPR
+N = 100;
 snP2_lst = [2.5:-0.4:0.1, 0.01, 0.0001];
 snP_lst = sqrt(snP2_lst);
 L = length(snP_lst);
@@ -77,7 +77,7 @@ legend(["MSE","F1 score","FPR","TPR"], 'FontSize', 15, 'Location', 'northwest')
 xlabel("Noise variance",'FontSize',15)
 ylabel("Scores",'FontSize',15)
 title("MSE, F1 score, FPR, TPR against noise variance",'FontSize',16)
-
+savefig("Experiment/SyntheticExperiment/Figs/ScoresVsSn.fig")
 %% Initialize for analysis of WGPLRT, NLRT
 % Parameters for the sensor network
 T = modelHyp.T; % time period for temporal processes [0, T]
@@ -117,14 +117,14 @@ H1 = struct("meanfunc",meanfunc1,"covfunc",{covfunc1},"hyp",hyp1);
 % warping function
 warpfunc = @(pd,p) invCdf(pd,p);
 warpinv = @(pd,p) invCdfWarp(pd,p);
-
-
-%% Experiment 2 - Analyze the effects of noise variance on the WGPLRT ROC curves by evaluating the AUC
 figOpt = Options.figOpt;
 printOpt = Options.printOpt; 
-M = 64;
+
+%% Experiment 3 - Analyze the effects of noise variance on the WGPLRT ROC curves by evaluating the AUC
+M = 50;
 snP2_lst = [2.5:-0.4:0.1, 0.01, 0.0001];
 snP_lst = sqrt(snP2_lst);
+% snP_lst = 1./(1:5:50);
 L = length(snP_lst) ;
 FPR = cell(L,1);
 TPR = cell(L,1);
@@ -136,8 +136,8 @@ for i = 1 : L
     fprintf("Iteration %d\n",i)
 end
 
-%% Experiment 2 - Analyze the effects of noise variance on the NLRT ROC curves by evaluating the AUC
-K = 64;
+%% Experiment 4 - Analyze the effects of noise variance on the NLRT ROC curves by evaluating the AUC
+K = 50;
 snI2_lst = [2.5:-0.4:0.1, 0.01, 0.0001];
 snI_lst = sqrt(snI2_lst);
 L = length(snI_lst);
@@ -167,11 +167,27 @@ legend({'WGPLRT','NLRT'},'FontSize', 15, 'Location', 'southeast')
 xlabel("Noise variance",'FontSize',15)
 ylabel("Area Under Curve (AUC)",'FontSize',15)
 title("AUC against noise variance",'FontSize',20)
+% savefig("Experiment/SyntheticExperiment/Figs/AUC_Sn.fig")
 
-%% Experiment 2 - Analyze the effects of the number of integral observations in NLRT on the 
+%%
+close
+figure('Position',[100,100,400,300])
+tight_subplot(1,1,[.01 .03],[.12 .08],[.11 .015])
+plot(1:5:50, AUC_sn.WGPLRT,'-^','MarkerSize',10,'LineWidth',1.5)
+hold on
+plot(1:5:50, AUC_sn.NLRT, '-v','MarkerSize',10,'LineWidth',1.5)
+hold off
+grid on 
+ylim('auto')
+legend({'WGPLRT','NLRT'},'FontSize', 15, 'Location', 'southeast')
+xlabel("Noise variance",'FontSize',15)
+ylabel("Area Under Curve (AUC)",'FontSize',15)
+title("AUC against noise variance",'FontSize',20)
+
+%% Experiment 5 - Analyze the effects of the number of integral observations in NLRT on the 
 %  ROC curves by evaluating the AUC
 snI = 0.01;
-K_lst = [10: 3: 64, 65: 1: 76, 78: 4 :129];
+K_lst = 10: 3: 129;
 L = length(K_lst);
 FPR = cell(L,1);
 TPR = cell(L,1);
@@ -184,7 +200,6 @@ for i = 1 : L
 end
 
 snI = 0.1;
-K_lst = [10: 3: 64, 65: 1: 76, 78: 4 :129];
 L = length(K_lst);
 FPR = cell(L,1);
 TPR = cell(L,1);
@@ -195,8 +210,37 @@ for i = 1 : L
     AUC_lst_K{i}.sn01 = AUC(TPR{i}, FPR{i});
 end
 AUC_lst_NLRT_K = expandCell(AUC_lst_K);
+%% Experiment 6 - Analyze the effects of the number of point observations in WGPLRT on the 
+% ROC curves by evaluating the AUC
+snP = 0.01;
+M_lst = 10: 3: 129;
+L = length(M_lst);
+FPR = cell(L,1);
+TPR = cell(L,1);
+AUC_lst_M = cell(L,1);
+
+for i = 1 : L
+    fprintf("Iteration %d \n ", i);
+    [TPR{i}, FPR{i}] = FuncWGPLRTroc(H0, H1, T, M_lst(i), snP, printOpt,figOpt);
+    AUC_lst_M{i}.sn001 = AUC(TPR{i}, FPR{i});
+end
+
+snP = 0.1;
+L = length(M_lst);
+FPR = cell(L,1);
+TPR = cell(L,1);
+
+for i = 1 : L
+    fprintf("Iteration %d \n ", i);
+    [TPR{i}, FPR{i}] = FuncWGPLRTroc(H0, H1, T, M_lst(i), snP, printOpt,figOpt);
+    AUC_lst_M{i}.sn01 = AUC(TPR{i}, FPR{i});
+end
+AUC_lst_WGPLRT_M = expandCell(AUC_lst_M);
+
+
 %% save results
-save(file_name, 'K_lst','AUC_lst_NLRT_K', '-append')
+save(file_name, 'K_lst','M_lst', 'AUC_lst_NLRT_K','AUC_lst_WGPLRT_M','-append')
+
 %% plot
 close
 figure('Position',[100,100,400,300])
@@ -204,20 +248,24 @@ tight_subplot(1,1,[.01 .03],[.12 .08],[.10 .015])
 plot(K_lst, AUC_lst_NLRT_K.sn001,'-b','LineWidth',1.5)
 hold on 
 plot(K_lst, AUC_lst_NLRT_K.sn01,'--r','LineWidth',1.5)
+plot(M_lst, AUC_lst_WGPLRT_M.sn001,'-o','LineWidth',1.5)
+plot(M_lst, AUC_lst_WGPLRT_M.sn01,'-*','LineWidth',1.5)
 hold off
 grid on 
 ylim([0.5,1.05]) 
-legend({'$\sigma_{\mathrm{I}}$=0.01','$\sigma_{\mathrm{I}}$=0.1'},'Interpreter','latex','FontSize', 15, 'Location', 'southeast')
-xlabel("Number of Integral Observations, K",'FontSize',15)
+legend({'NLRT $\sigma_{\mathrm{I}}$=0.01','NLRT $\sigma_{\mathrm{I}}$=0.1', ...
+    'WGPLRT $\sigma_{\mathrm{I}}$=0.01','WGPLRT $\sigma_{\mathrm{I}}$=0.1'},'Interpreter','latex','FontSize', 15, 'Location', 'southeast')
+xlabel("Number of observations",'FontSize',15)
 ylabel("Area Under Curve (AUC)",'FontSize',15)
-title("AUC against Number of Integral Observations",'FontSize',16.5)
+title("AUC against Number of Observations",'FontSize',16.5)
+savefig("Experiment/SyntheticExperiment/Figs/AUCvaryingK.fig")
 
-%% Experiment 2 - Compare the ROC curve when K = M = 64 for WGPLRT and NRLT
+%% Experiment 7 - Compare the ROC curve when K = M = 50 for WGPLRT and NRLT
 sn = 0.1;
 cell_TPR = cell(1, 2);
 cell_FPR = cell(1, 2);
-K = 64;
-M = 64;
+K = 50;
+M = 50;
 figOpt = true;
 printOpt = false;
 
@@ -246,9 +294,10 @@ hold off
 ylim([0,1.05])
 grid on
 legend({'NLRT','WGPLRT','y=x'},'FontSize', 15, 'Location', 'southeast')
-xlabel("False Positive Rate",'FontSize',15)
-ylabel("True Positive Rate",'FontSize',15)
-title("ROC curves when M=K=64",'FontSize',20)
+xlabel("False positive rate",'FontSize',15)
+ylabel("True positive rate",'FontSize',15)
+title("ROC curves when M=K=50",'FontSize',20)
+savefig("Experiment/SyntheticExperiment/Figs/ROC_at_OptM=50.fig")
 
 %% function utilities
 function C_final = aveCell(C)

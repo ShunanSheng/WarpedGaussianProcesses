@@ -42,7 +42,7 @@ function Data=SimSynData(SP,H0,H1,warpfunc_sp, warpfunc, modelHyp, locHyp)
         indexTest = locHyp.indexTest;
     end
         
-    rng('default')
+    % rng('default')
     % Generate the lantent binary spatial field
     g = SimGP(hyp,meanfunc,covfunc,x);
     y = warpfunc_sp(hyp.thres,g);

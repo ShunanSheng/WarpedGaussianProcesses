@@ -31,6 +31,7 @@ function ZI=SimIntData(hyp,C,mu, warpfunc,K,kw,snI,nI)
     for i=1:K
         ZI(i,:) = SimpsonRule(z((i-1)*kw+1:i*kw,:),dt);
     end
-    ZI = ZI+snI*randn(K,nI);
-    
+    % ZI = ZI + snI*randn(K,nI);
+    ZI = K /T * ZI+snI*randn(K,nI);
+   
 end

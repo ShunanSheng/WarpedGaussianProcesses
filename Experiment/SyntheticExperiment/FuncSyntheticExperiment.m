@@ -210,7 +210,26 @@ Ypred_SBLUE = SBLUE_pred(SBLUE,Ytrain_hat);           % predictions
 F1.SBLUE = F1score(Ytest,Ypred_SBLUE);
 MSE.SBLUE = sum((Ytest-Ypred_SBLUE).^2)/length(Ytest);
 [TPR.SBLUE,FPR.SBLUE] = confusionMat(Ytest,Ypred_SBLUE);
-% time.SBLUE = toc;
+
+%% SBLUE with point observations only
+SBLUEprep_pobs = SBLUE_stats_prep(covfunc,meanfunc,hyp_sp,Xtrain(liP,:),Xtest);
+transitionMat_pobs.p01 = A1(3);
+transitionMat_pobs.p11 = A1(4);
+SBLUE_pobs = SBLUE_stats(SBLUEprep_pobs,transitionMat_pobs,c); % calculate the SBLUE covariances 
+Ypred_SBLUE_pobs = SBLUE_pred(SBLUE_pobs,Ytrain_hat(liP));% predictions
+F1.SBLUE_pobs = F1score(Ytest,Ypred_SBLUE_pobs);
+MSE.SBLUE_pobs = sum((Ytest-Ypred_SBLUE_pobs).^2)/length(Ytest);
+[TPR.SBLUE_pobs,FPR.SBLUE_opbs] = confusionMat(Ytest,Ypred_SBLUE_pobs);
+
+%% SBLUE with integral observations only
+SBLUEprep_iobs = SBLUE_stats_prep(covfunc,meanfunc,hyp_sp,Xtrain(liI,:),Xtest);
+transitionMat_iobs.p01 = A2(3);
+transitionMat_iobs.p11 = A2(4);
+SBLUE_iobs = SBLUE_stats(SBLUEprep_iobs,transitionMat_iobs,c); % calculate the SBLUE covariances 
+Ypred_SBLUE_iobs = SBLUE_pred(SBLUE_iobs,Ytrain_hat(liI));% predictions
+F1.SBLUE_iobs = F1score(Ytest,Ypred_SBLUE_iobs);
+MSE.SBLUE_iobs = sum((Ytest-Ypred_SBLUE_iobs).^2)/length(Ytest);
+[TPR.SBLUE_iobs,FPR.SBLUE_oibs] = confusionMat(Ytest,Ypred_SBLUE_iobs);
 
 %% GPR: Oracle
 g_train = g(indexTrain);
@@ -264,7 +283,7 @@ if figOpt
     Y = reshape(x(:,2),[50,50]);
     Z = double(reshape(y,[50,50]));
     figure('Position',[100,100,400,300])
-    tight_subplot(1,1,[.01 .03],[.05 .06],[.05 .01])
+    tight_subplot(1,1,[.01 .03],[.05 .075],[.05 .01])
     surf(X,Y,Z);
     shading interp
     view(2)
@@ -274,12 +293,13 @@ if figOpt
     legend(["true binary spatial field",'sensor locations'],'Location','southeast','FontSize',15)
     hold off
     title('The True Binary Spatial Field','FontSize',20)
-    
+    savefig("Experiment/SyntheticExperiment/Figs/TrueField.fig")
+
     % Plot the prediction
     Yhat(indexTest) = Ypred_SBLUE;
     Zhat = double(reshape(Yhat,[50,50]));
     figure('Position',[100,100,400,300])
-    tight_subplot(1,1,[.01 .03],[.05 .09],[.05 .01])
+    tight_subplot(1,1,[.01 .03],[.05 .075],[.05 .01])
     surf(X,Y,Zhat);
     shading interp
     view(2)
@@ -287,6 +307,7 @@ if figOpt
     hold on
     plot3(Xtrain(:,1),Xtrain(:,2),Ytrain_hat, ['x','r']);
     legend(["reconstructed binary spatial field",'sensor locations'],'Location','southeast','FontSize',15)
-    title("The Reconstructed Binary Spatial Field",'FontSize',20)
+    title("The Reconstructed Binary Spatial Field",'FontSize', 20)
+    savefig("Experiment/SyntheticExperiment/Figs/ReconstructedField.fig")
 end
 end

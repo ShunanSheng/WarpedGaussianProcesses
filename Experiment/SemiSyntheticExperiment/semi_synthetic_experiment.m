@@ -153,10 +153,12 @@ tight_subplot(1,1,[.01 .03],[.117 .09],[.105 .03])
 plot(M_lst, AUC_lst_WGPLRT, '-','LineWidth',1.5)
 legend({'$\sigma_{\mathrm{I}}$=0.1'},'Interpreter','latex','FontSize', 15, 'Location', 'southeast')
 grid on
-xlabel("Number of Point Observations, M",'FontSize',15)
+xlabel("Number of point observations, M",'FontSize',15)
 ylabel("Area Under Curve (AUC)",'FontSize',15)
 title("AUC against Number of Point Observations",'FontSize',17.5)
+savefig("Experiment/SemiSyntheticExperiment/Figs/AUCvsM.fig")
 
+%%
 figure('Position',[100,100,400,300])
 tight_subplot(1,1,[.01 .03],[.115 .09],[.105 .03])
 plot(FPR{L}, TPR{L}, '-','LineWidth',1.5)
