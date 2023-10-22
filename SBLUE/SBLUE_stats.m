@@ -26,7 +26,7 @@ function SBLUE=SBLUE_stats(SBLUEprep,transitionMat,c)
     SBLUE.Covg=Cov_g;
     SBLUE.mXstar=SBLUEprep.mXstar;
     SBLUE.c=c;
-    
+    SBLUE.ginvY = SBLUE.Covg / (SBLUE.CovY);
  
 end
 

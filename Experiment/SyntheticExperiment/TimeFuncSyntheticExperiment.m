@@ -1,4 +1,4 @@
-function [MSE, F1, TPR, FPR] = FuncSyntheticExperiment(modelHyp, Options)
+function [OnlineTime, OfflineTime] = TimeFuncSyntheticExperiment(modelHyp, Options)
 
 figOpt = Options.figOpt;
 printOpt = Options.printOpt;
@@ -107,7 +107,8 @@ else
    error("Not recognized experiment type") 
 end
 
-if exist(file_name,'file')
+% Options.Time == 1 states that we need to compute the offline time.
+if exist(file_name,'file') && Options.Time == 0
     fprintf("Load offline parameters when M = %d, snP = %4.2f, alpha = %4.2f!\n", M, snP, alpha);
     file = load(file_name);
     LRT = file.LRT;
@@ -126,13 +127,15 @@ else
     fprintf("Compute offline parameters when M = %d, snP = %4.2f, alpha = %4.2f!\n", M, snP, alpha);
     % WGPLRT
     % run Laplace approximation
+    tic
     x_init = [ones(M,1)*pd0.mean, ones(M,1)*pd1.mean]; 
     LRT = WGPLRT_opt(H0,H1,warpinv,t,x_init, snP);
     % logGammaP at significance level = alpha from simulation
     [wtp,wfp,logGammaP] = FuncWGPLRT(H0, H1, T, M, snP,alpha, printOpt,figOpt, LRT);
-    
+    OfflineTime.WGPLRT = toc;
     % NLRT
     % calculate the number of point neeed per window under Simpson's rule with 0.01 error
+    tic
     kw = ceil(exp(log(1000000*(T/K).^5/180)/4)); 
     kw = round(kw/2)*2;
     if kw < 4
@@ -153,9 +156,12 @@ else
     
     % Parameters for NLRT
     [ntp,nfp,logGammaI] = FuncNLRT(H0, H1, T, K, snI, alpha, printOpt, figOpt, Z0, Z1);
-    
+    OfflineTime.NLRT = toc;
+
     % SBLUE
+    tic
     SBLUEprep = SBLUE_stats_prep(covfunc,meanfunc,hyp_sp,Xtrain,Xtest);
+    OfflineTime.SBLUE = toc;
     % store the parameters
     save(file_name,'LRT','wtp','wfp','logGammaP','ntp', 'nfp',...
         'logGammaI','SBLUEprep','Z0', 'Z1');
@@ -175,7 +181,7 @@ yhat_pt_1 = WGPLRT_pred(ZP1,LRT,logGammaP);% the classification
 % Assign predictions to the locations of point observations
 Yhat(xP0) = yhat_pt_0;
 Yhat(xP1) = yhat_pt_1;
-time.WGPLRT = toc;
+OnlineTime.WGPLRT = toc;
 %% Online: NLRT
 tic;
 sumstats = @(z) summaryAuto(z,4); % the summary statistic: Autocorrelation with lag=1,...,4
@@ -196,13 +202,15 @@ Yhat(xI0) = yhat_int_0;
 Yhat(xI1) = yhat_int_1;
 
 Ytrain_hat = Yhat(indexTrain);
-time.NLRT = toc;
+OnlineTime.NLRT = toc;
 
 %% Online: SBLUE
 % the false postive rates and true postive rates are
 % computed via simulation in test_WGPLRT.m and test_NLRT.m
 
+
 tic;
+SBLUEprep = SBLUE_stats_prep(covfunc,meanfunc,hyp_sp,Xtrain,Xtest);
 liP = ismember(indexTrain,[xP0;xP1]);        % the locations of the point observations (using WGPLRT)
 liI = ismember(indexTrain,[xI0;xI1]);        % the locations of the integral observations (using NLRT)
 rho = [1-wfp,1-nfp];lambda = [wtp,ntp];        % rho indicates the 1-FPR of WGPLRT & NLRT; lambda indicates TPR of WGPLRT & NLRT 
@@ -211,32 +219,41 @@ A2 = [rho(2),1-rho(2);1-lambda(2),lambda(2)];% transition matrix (NLRT)
 
 transitionMat = SBLUE_confusion(A1,A2,liP,liI);
 SBLUE = SBLUE_stats(SBLUEprep,transitionMat,c); % calculate the SBLUE covariances 
+OfflineTime.SBLUE = toc;
+
+tic;
 Ypred_SBLUE = SBLUE_pred(SBLUE,Ytrain_hat);           % predictions
 F1.SBLUE = F1score(Ytest,Ypred_SBLUE);
 MSE.SBLUE = sum((Ytest-Ypred_SBLUE).^2)/length(Ytest);
 [TPR.SBLUE,FPR.SBLUE] = confusionMat(Ytest,Ypred_SBLUE);
-time.SBLUE = toc;
+OnlineTime.SBLUE = toc;
 
 %% SBLUE with point observations only
+tic;
 SBLUEprep_pobs = SBLUE_stats_prep(covfunc,meanfunc,hyp_sp,Xtrain(liP,:),Xtest);
 transitionMat_pobs.p01 = A1(3);
 transitionMat_pobs.p11 = A1(4);
 SBLUE_pobs = SBLUE_stats(SBLUEprep_pobs,transitionMat_pobs,c); % calculate the SBLUE covariances 
+OfflineTime.SBLUE_pobs = toc;
+tic;
 Ypred_SBLUE_pobs = SBLUE_pred(SBLUE_pobs,Ytrain_hat(liP));% predictions
 F1.SBLUE_pobs = F1score(Ytest,Ypred_SBLUE_pobs);
 MSE.SBLUE_pobs = sum((Ytest-Ypred_SBLUE_pobs).^2)/length(Ytest);
 [TPR.SBLUE_pobs,FPR.SBLUE_opbs] = confusionMat(Ytest,Ypred_SBLUE_pobs);
-
+OnlineTime.SBLUE_pobs = toc;
 %% SBLUE with integral observations only
+tic;
 SBLUEprep_iobs = SBLUE_stats_prep(covfunc,meanfunc,hyp_sp,Xtrain(liI,:),Xtest);
 transitionMat_iobs.p01 = A2(3);
 transitionMat_iobs.p11 = A2(4);
 SBLUE_iobs = SBLUE_stats(SBLUEprep_iobs,transitionMat_iobs,c); % calculate the SBLUE covariances 
+OfflineTime.SBLUE_iobs = toc;
+tic;
 Ypred_SBLUE_iobs = SBLUE_pred(SBLUE_iobs,Ytrain_hat(liI));% predictions
 F1.SBLUE_iobs = F1score(Ytest,Ypred_SBLUE_iobs);
 MSE.SBLUE_iobs = sum((Ytest-Ypred_SBLUE_iobs).^2)/length(Ytest);
 [TPR.SBLUE_iobs,FPR.SBLUE_oibs] = confusionMat(Ytest,Ypred_SBLUE_iobs);
-
+OnlineTime.SBLUE_iobs = toc;
 %% GPR: Oracle
 g_train = g(indexTrain);
 KXX = SBLUEprep.Cov_xtrain;
@@ -252,14 +269,15 @@ F1.GPR = F1score(Ytest,Ypred_GPR);
 % Mdl = fitcknn(Xtrain,Ytrain_hat,'OptimizeHyperparameters','auto',...
 %     'HyperparameterOptimizationOptions',...
 %     struct('AcquisitionFunctionName','expected-improvement-plus',"ShowPlots",false));
-
+tic;
 Mdl = fitcknn(Xtrain,Ytrain_hat,'Distance','seuclidean','NumNeighbors',7);
+OfflineTime.KNN = toc;
 tic;
 [Ypred_KNN, ~ , ~] = predict(Mdl,Xtest);
 F1.KNN = F1score(Ytest,Ypred_KNN);
 MSE.KNN=sum((Ypred_KNN-Ytest).^2)/length(Ytest);
 [TPR.KNN,FPR.KNN] = confusionMat(Ytest,Ypred_KNN);
-time.KNN = toc;
+OnlineTime.KNN = toc;
 
 %% Evaluation
 if printOpt

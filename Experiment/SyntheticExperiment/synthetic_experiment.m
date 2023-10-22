@@ -10,7 +10,7 @@ snI = 0.1;
 ratio = 0.5;
 alpha = 0.1;
 modelHyp = struct("T", T,"M",M,"K",K,"snI",snI,"snP",snP,'ratio',ratio, 'alpha', alpha);
-Options = struct("figOpt", false, "printOpt", false, "VaryParameter", 1);
+Options = struct("figOpt", false, "printOpt", false, "VaryParameter", 1, "Time", 1);
 pd = makedist("g_and_h","g",0.1,"h",0.4,'loc',1,'sca',1);
 
 %% Experiment 1 - Compute the average F1 score and MSE
@@ -32,8 +32,27 @@ aveFPR = aveCell(FPR);
 %% save results
 save(file_name, 'aveMSE', 'aveF1','aveTPR','aveFPR','-append')
 
-%% Experiment 2 - Analyze the effects of the noise variance on F1 score, MSE, TPR, and FPR
+
+%% Experiment 1.5 - Compute the average online computational time 
 N = 100;
+Options.Time = 1;
+OnlineTime = cell(N,1);
+OfflineTime = cell(N,1);
+for i = 1 : N
+    [OnlineTime{i}, OfflineTime{i}]  = TimeFuncSyntheticExperiment(modelHyp, Options);
+    fprintf("Iteration %d \n ", i);
+end
+aveOnlineTime = aveCell(OnlineTime);
+aveOfflineTime = aveCell(OfflineTime);
+%% Offline computational time
+% Options.Time = 1;
+% [~, OfflineTime] = TimeFuncSyntheticExperiment(modelHyp, Options);
+
+%% save results
+save(file_name,'aveOnlineTime', 'OfflineTime', '-append')
+
+%% Experiment 2 - Analyze the effects of the noise variance on F1 score, MSE, TPR, and FPR
+N = 10;
 snP2_lst = [2.5:-0.4:0.1, 0.01, 0.0001];
 snP_lst = sqrt(snP2_lst);
 L = length(snP_lst);
